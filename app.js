@@ -1,5 +1,4 @@
 // ====================== إعدادات Firebase ======================
-// ضع هنا بيانات مشروعك من Firebase Console
 const firebaseConfig = {
   apiKey: "AIzaSyBDpevzaNnyk0Nyk7-1L-PFPVgz2rlHvQ",
   authDomain: "couple-game-aeec9.firebaseapp.com",
@@ -11,7 +10,7 @@ const firebaseConfig = {
   measurementId: "G-BCF7W6B3YM"
 };
 
-// تفعيل Firebase (سيتم تجاهله إذا لم تضع المفاتيح)
+// تفعيل Firebase
 let database = null;
 try {
   firebase.initializeApp(firebaseConfig);
@@ -167,7 +166,8 @@ function loadMyTasks() {
   if (saved) {
     myTasks = JSON.parse(saved);
   } else {
-    myTasks = currentRole === 'husband' ? [...defaultHusbandTasks] : [...defaultWifeTasks];
+    // الزوج يستخدم مهام الزوجة لكي يطلبها منها، والعكس صحيح!
+    myTasks = currentRole === 'husband' ? [...defaultWifeTasks] : [...defaultHusbandTasks];
     saveMyTasks();
   }
 }
@@ -185,13 +185,13 @@ function setupGameUI() {
 
 function updateTurnUI() {
   if (isMyTurn) {
-    turnText.textContent = currentRole === 'husband' ? 'دور الزوج' : 'دور الزوجة';
-    statusMessage.textContent = 'حان دورك الآن – اضغط لإرسال طلب';
+    turnText.textContent = currentRole === 'husband' ? 'دور الزوج (أنت تطلب)' : 'دور الزوجة (أنتِ تطلبين)';
+    statusMessage.textContent = 'حان دورك لإرسال طلب للطرف الآخر!';
     actionBtn.disabled = false;
     actionBtn.textContent = 'أرسل طلباً عشوائياً';
   } else {
     turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
-    statusMessage.textContent = 'في انتظار الطرف الآخر...';
+    statusMessage.textContent = 'في انتظار طلب أو تنفيذ الطرف الآخر...';
     actionBtn.disabled = true;
     actionBtn.textContent = 'انتظر دورك';
   }
@@ -210,21 +210,18 @@ function sendRandomRequest() {
     text: task,
     from: currentRole,
     timestamp: Date.now(),
-    image: '🔥' // يمكن استبدالها برابط صورة لاحقاً
+    image: '🔥'
   };
 
-  // إرسال عبر Firebase أو محلياً
+  // تبديل الدور فوراً للطرف الآخر عند الإرسال
+  const nextTurnRole = currentRole === 'husband' ? 'wife' : 'husband';
+
   if (database) {
     database.ref(`rooms/${roomCode}/currentRequest`).set(requestData);
-    database.ref(`rooms/${roomCode}/turn`).set(currentRole === 'husband' ? 'wife' : 'husband');
+    database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole);
   } else {
-    // وضع محلي للتجربة
     localStorage.setItem(`request_${roomCode}`, JSON.stringify(requestData));
-    localStorage.setItem(`turn_${roomCode}`, currentRole === 'husband' ? 'wife' : 'husband');
-    // محاكاة استقبال فوري على نفس الجهاز
-    setTimeout(() => {
-      receiveRequest(requestData);
-    }, 300);
+    localStorage.setItem(`turn_${roomCode}`, nextTurnRole);
   }
 
   isMyTurn = false;
@@ -233,7 +230,7 @@ function sendRandomRequest() {
 
 // ====================== استقبال الطلب ======================
 function receiveRequest(data) {
-  if (data.from === currentRole) return; // لا تستقبل طلبك أنت
+  if (!data || data.from === currentRole) return;
 
   currentRequest = data;
   requestText.textContent = data.text;
@@ -243,16 +240,12 @@ function receiveRequest(data) {
 
 document.getElementById('btn-done').addEventListener('click', () => {
   requestModal.classList.add('hidden');
-  // إعطاء الدور للطرف الذي أرسل
+  
   if (database) {
-    database.ref(`rooms/${roomCode}/turn`).set(currentRequest.from);
     database.ref(`rooms/${roomCode}/currentRequest`).remove();
   } else {
-    localStorage.setItem(`turn_${roomCode}`, currentRequest.from);
     localStorage.removeItem(`request_${roomCode}`);
   }
-  isMyTurn = false;
-  updateTurnUI();
 });
 
 document.getElementById('btn-hide').addEventListener('click', () => {
@@ -262,13 +255,22 @@ document.getElementById('btn-hide').addEventListener('click', () => {
 // ====================== الاستماع للتغييرات ======================
 function startListening() {
   if (database) {
-    // وضع Firebase الحقيقي
+    // الاستماع لتغييرات الدور
     database.ref(`rooms/${roomCode}/turn`).on('value', (snap) => {
       const turn = snap.val();
-      isMyTurn = (turn === currentRole) || turn === null;
+      // إذا لم يكن الدور محدد بعد، نعتبر أن الزوج يبدأ أولاً
+      if (turn === null) {
+        if (currentRole === 'husband') {
+          database.ref(`rooms/${roomCode}/turn`).set('husband');
+        }
+        isMyTurn = (currentRole === 'husband');
+      } else {
+        isMyTurn = (turn === currentRole);
+      }
       updateTurnUI();
     });
 
+    // الاستماع للطلبات الجديدة
     database.ref(`rooms/${roomCode}/currentRequest`).on('value', (snap) => {
       const data = snap.val();
       if (data && data.from !== currentRole) {
@@ -276,13 +278,11 @@ function startListening() {
       }
     });
   } else {
-    // وضع محلي (للتجربة على نفس الجهاز أو بدون إنترنت)
-    // نبدأ بدور الزوج افتراضياً
+    // وضع محلي للتجربة
     const savedTurn = localStorage.getItem(`turn_${roomCode}`);
     isMyTurn = !savedTurn || savedTurn === currentRole;
     updateTurnUI();
 
-    // فحص دوري بسيط
     setInterval(() => {
       const turn = localStorage.getItem(`turn_${roomCode}`);
       const shouldBeMyTurn = !turn || turn === currentRole;
