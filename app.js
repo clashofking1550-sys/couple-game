@@ -20,7 +20,7 @@ try {
 
 // ====================== القوائم الافتراضية ======================
 
-// 1. الطلبات التي يريدها الزوج من زوجته (يملكها الزوج ويرسلها لها)
+// 1. الطلبات التي يكتبها/يملكها الزوج لكي ترسلها الزوجة للزوج (أو يختارها الزوج ليطلبها منها)
 const defaultHusbandWants = [
   "اخلعي جزءاً من ملابسك ببطء أمام الكاميرا وأنت تنظرين إليّ بشهوة.",
   "المسي حلماتك ببطء ودلكيهما حتى تحمرا وأنت تتأوهين.",
@@ -44,7 +44,7 @@ const defaultHusbandWants = [
   "انهي بنفسك أمام الكاميرا وأريني وجهك لحظة الوصول للذروة."
 ];
 
-// 2. الطلبات التي تريدها الزوجة من زوجها (تملكها الزوجة وترسلها له)
+// 2. الطلبات التي يكتبها/تملكها الزوجة لكي يطلبها الزوج منها (أو تختارها الزوجة لتطلبها منه)
 const defaultWifeWants = [
   "انزع قميصك ببطء وأرني صدرك وعضلاتك وأنت تتلمسها.",
   "أمسك قضيبك أمام الكاميرا ودلّكه ببطء وأنت تنظر إليّ بشهوة.",
@@ -121,7 +121,7 @@ function joinRoom() {
   showScreen('game');
 }
 
-// ====================== تحميل الطلبات ======================
+// ====================== تحميل الطلبات بالشكل الصحيح ======================
 function loadMyTasks() {
   const key = `tasks_${roomCode}_${currentRole}`;
   const saved = localStorage.getItem(key);
@@ -133,6 +133,8 @@ function loadMyTasks() {
 }
 
 function resetToDefaultTasks() {
+  // الزوج يجهز الطلبات التي يريد أن تفعلها (الزوجة)
+  // الزوجة تجهز الطلبات التي تريد أن يفعلها (الزوج)
   myTasks = currentRole === 'husband' ? [...defaultHusbandWants] : [...defaultWifeWants];
   saveMyTasks();
 }
@@ -151,9 +153,9 @@ function setupGameUI() {
 function updateTurnUI() {
   if (isMyTurn) {
     turnText.textContent = currentRole === 'husband' ? 'دورك (اطلب من زوجتك)' : 'دورك (اطلبي من زوجك)';
-    statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اختر طلباً ليقوم به الطرف الآخر`;
+    statusMessage.textContent = `لديك ${myTasks.length} طلب – اضغط لسحب طلب وإرساله للشريك`;
     actionBtn.disabled = myTasks.length === 0;
-    actionBtn.textContent = myTasks.length > 0 ? 'أرسل طلباً للطرف الآخر' : 'انتهت الطلبات! أعد تعيين القائمة';
+    actionBtn.textContent = myTasks.length > 0 ? 'أرسل طلباً للشريك' : 'انتهت الطلبات! أعد تعيين القائمة';
   } else {
     turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
     statusMessage.textContent = 'في انتظار أن يطلب منك الطرف الآخر طلباً لتنفذه...';
@@ -169,7 +171,7 @@ function sendRandomRequest() {
   if (!isMyTurn) return;
 
   if (myTasks.length === 0) {
-    if (confirm('انتهت كافة الطلبات في قائمتك! هل تريد إعادة تحميل الطلبات الافتراضية؟')) {
+    if (confirm('انتهت كافة الطلبات في قائمتك! هل تريد إعادة تحميل القائمة الافتراضية؟')) {
       resetToDefaultTasks();
       updateTurnUI();
     }
@@ -179,7 +181,7 @@ function sendRandomRequest() {
   const randomIndex = Math.floor(Math.random() * myTasks.length);
   const task = myTasks[randomIndex];
 
-  // استبعاد الطلب من القائمة لكي لا يتكرر
+  // استبعاد الطلب من القائمة كي لا يتكرر
   myTasks.splice(randomIndex, 1);
   saveMyTasks();
 
@@ -204,7 +206,7 @@ function sendRandomRequest() {
   updateTurnUI();
 }
 
-// ====================== استقبال الطلب من الطرف الآخر ======================
+// ====================== استقبال الطلب وتنفيذه ======================
 function receiveRequest(data) {
   if (!data || data.from === currentRole) return;
 
@@ -217,7 +219,7 @@ function receiveRequest(data) {
 document.getElementById('btn-done').addEventListener('click', () => {
   requestModal.classList.add('hidden');
   
-  // بعد أن ينفذ المطلوب، ينتقل الدور إليه ليطلب هو من قائمته الخاصة
+  // بعد التنفيذ، ينتقل الدور للطرف الذي نفذ ليطلب هو من قائمته
   const nextTurnRole = currentRole;
 
   if (database) {
@@ -279,7 +281,7 @@ function startListening() {
   }
 }
 
-// ====================== تعديل وإدارة القائمة الشخصية ======================
+// ====================== تعديل وإدارة القائمة ======================
 document.getElementById('btn-edit-list').addEventListener('click', () => {
   renderTasksList();
   showScreen('edit');
@@ -291,7 +293,7 @@ document.getElementById('btn-back').addEventListener('click', () => {
 });
 
 document.getElementById('btn-add-task').addEventListener('click', () => {
-  const newTask = prompt('اكتب الطلب الجديد الذي تريد أن يفعله الطرف الآخر:');
+  const newTask = prompt('اكتب طلباً جديداً تريد أن يفعله الطرف الآخر:');
   if (newTask && newTask.trim()) {
     myTasks.push(newTask.trim());
     saveMyTasks();
@@ -344,7 +346,7 @@ function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   if (name === 'login') loginScreen.classList.add('active');
   if (name === 'game') gameScreen.classList.add('active');
-  if (name === 'edit') editScreen.classList.add('active');
+  if (name === 'edit') editScreen.classList.add('edit');
 }
 
 showScreen('login');
