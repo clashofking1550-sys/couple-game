@@ -241,10 +241,15 @@ function receiveRequest(data) {
 document.getElementById('btn-done').addEventListener('click', () => {
   requestModal.classList.add('hidden');
   
+  // الشخص الذي استقبل الطلب ونفذه (مثلاً الزوجة) أصبح دوره الآن هو من يرسل طلباً جديداً للزوج!
+  const nextTurnRole = currentRole; // الدور الحالي يصبح هو صاحب الطلب القادم
+
   if (database) {
     database.ref(`rooms/${roomCode}/currentRequest`).remove();
+    database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole);
   } else {
     localStorage.removeItem(`request_${roomCode}`);
+    localStorage.setItem(`turn_${roomCode}`, nextTurnRole);
   }
 });
 
