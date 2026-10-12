@@ -17,7 +17,7 @@ try {
     database = firebase.database();
   }
 } catch (e) {
-  console.warn("Firebase غير مفعّل - يعمل في الوضع المحلي فقط", e);
+  console.warn("Firebase غير مفعّل - يعمل محلياً", e);
 }
 
 // ====================== القوائم الافتراضية ======================
@@ -54,44 +54,112 @@ let myTasks = [];
 let isMyTurn = false;
 let currentRequest = null;
 
-// ====================== عناصر DOM ======================
-const loginScreen = document.getElementById('login-screen');
-const gameScreen = document.getElementById('game-screen');
-const editScreen = document.getElementById('edit-screen');
-const requestModal = document.getElementById('request-modal');
-const themeWrapper = document.getElementById('theme-wrapper');
-const turnText = document.getElementById('turn-text');
-const statusMessage = document.getElementById('status-message');
-const actionBtn = document.getElementById('action-btn');
-const requestText = document.getElementById('request-text');
-const requestImage = document.getElementById('request-image');
-const tasksList = document.getElementById('tasks-list');
-const btnHusband = document.getElementById('btn-husband');
-const btnWife = document.getElementById('btn-wife');
+// ====================== ربط الأحداث عند تحميل الصفحة ======================
+document.addEventListener('DOMContentLoaded', () => {
+  const btnHusband = document.getElementById('btn-husband');
+  const btnWife = document.getElementById('btn-wife');
+  const btnJoin = document.getElementById('btn-join');
 
-// ====================== أحداث الدخول (تم تصحيحها لتعمل بسلاسة) ======================
-btnHusband.addEventListener('click', () => {
-  currentRole = 'husband';
-  btnHusband.style.border = '3px solid #fff';
-  btnHusband.style.transform = 'scale(1.05)';
-  btnWife.style.border = 'none';
-  btnWife.style.transform = 'scale(1)';
+  if (btnHusband) {
+    btnHusband.addEventListener('click', () => {
+      currentRole = 'husband';
+      btnHusband.style.border = '3px solid #fff';
+      btnHusband.style.transform = 'scale(1.05)';
+      if (btnWife) {
+        btnWife.style.border = 'none';
+        btnWife.style.transform = 'scale(1)';
+      }
+    });
+  }
+
+  if (btnWife) {
+    btnWife.addEventListener('click', () => {
+      currentRole = 'wife';
+      btnWife.style.border = '3px solid #fff';
+      btnWife.style.transform = 'scale(1.05)';
+      if (btnHusband) {
+        btnHusband.style.border = 'none';
+        btnHusband.style.transform = 'scale(1)';
+      }
+    });
+  }
+
+  if (btnJoin) {
+    btnJoin.addEventListener('click', joinRoom);
+  }
+
+  const actionBtn = document.getElementById('action-btn');
+  if (actionBtn) {
+    actionBtn.addEventListener('click', sendRandomRequest);
+  }
+
+  const btnDone = document.getElementById('btn-done');
+  if (btnDone) {
+    btnDone.addEventListener('click', () => {
+      document.getElementById('request-modal').classList.add('hidden');
+      const nextTurnRole = currentRole;
+
+      if (database) {
+        database.ref(`rooms/${roomCode}/currentRequest`).remove();
+        database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole);
+      } else {
+        localStorage.removeItem(`request_${roomCode}`);
+        localStorage.setItem(`turn_${roomCode}`, nextTurnRole);
+      }
+    });
+  }
+
+  const btnHide = document.getElementById('btn-hide');
+  if (btnHide) {
+    btnHide.addEventListener('click', () => {
+      document.getElementById('request-modal').classList.add('hidden');
+    });
+  }
+
+  const btnEditList = document.getElementById('btn-edit-list');
+  if (btnEditList) {
+    btnEditList.addEventListener('click', () => {
+      renderTasksList();
+      showScreen('edit');
+    });
+  }
+
+  const btnBack = document.getElementById('btn-back');
+  if (btnBack) {
+    btnBack.addEventListener('click', () => {
+      updateTurnUI();
+      showScreen('game');
+    });
+  }
+
+  const btnAddTask = document.getElementById('btn-add-task');
+  if (btnAddTask) {
+    btnAddTask.addEventListener('click', () => {
+      const newTask = prompt('اكتب طلباً جديداً تريد إضافته لتنفذه:');
+      if (newTask && newTask.trim()) {
+        myTasks.push(newTask.trim());
+        saveMyTasks();
+        renderTasksList();
+      }
+    });
+  }
+
+  const btnLogout = document.getElementById('btn-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+      if (confirm('هل تريد الخروج؟')) {
+        location.reload();
+      }
+    });
+  }
 });
-
-btnWife.addEventListener('click', () => {
-  currentRole = 'wife';
-  btnWife.style.border = '3px solid #fff';
-  btnWife.style.transform = 'scale(1.05)';
-  btnHusband.style.border = 'none';
-  btnHusband.style.transform = 'scale(1)';
-});
-
-document.getElementById('btn-join').addEventListener('click', joinRoom);
 
 function joinRoom() {
-  const code = document.getElementById('room-code').value.trim();
+  const roomInput = document.getElementById('room-code');
+  const code = roomInput ? roomInput.value.trim() : '';
+  
   if (!currentRole) {
-    alert('الرجاء اختيار الدور أولاً بالضغط على أيقونة (زوج) أو (زوجة)');
+    alert('الرجاء اختيار الدور أولاً (زوج أو زوجة)');
     return;
   }
   if (!code || code.length < 4) {
@@ -133,27 +201,36 @@ function saveMyTasks() {
 
 // ====================== واجهة اللعب ======================
 function setupGameUI() {
-  themeWrapper.className = currentRole === 'husband' ? 'theme-husband' : 'theme-wife';
+  const themeWrapper = document.getElementById('theme-wrapper');
+  if (themeWrapper) {
+    themeWrapper.className = currentRole === 'husband' ? 'theme-husband' : 'theme-wife';
+  }
   updateTurnUI();
 }
 
 function updateTurnUI() {
+  const turnText = document.getElementById('turn-text');
+  const statusMessage = document.getElementById('status-message');
+  const actionBtn = document.getElementById('action-btn');
+
   if (isMyTurn) {
-    turnText.textContent = currentRole === 'husband' ? 'دورك (اسحب طلباً لتنفذه)' : 'دورك (اسحبي طلباً لتنفذيه)';
-    statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب وتنفذه`;
-    actionBtn.disabled = myTasks.length === 0;
-    actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً ونفذه' : 'انتهت الطلبات! أعد تعيين القائمة';
+    if (turnText) turnText.textContent = currentRole === 'husband' ? 'دورك (اسحب طلباً لتنفذه)' : 'دورك (اسحبي طلباً لتنفذيه)';
+    if (statusMessage) statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب وتنفذه`;
+    if (actionBtn) {
+      actionBtn.disabled = myTasks.length === 0;
+      actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً ونفذه' : 'انتهت الطلبات! أعد تعيين القائمة';
+    }
   } else {
-    turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
-    statusMessage.textContent = 'الشريك يسحب وينفذ طلبه الآن...';
-    actionBtn.disabled = true;
-    actionBtn.textContent = 'انتظر دورك';
+    if (turnText) turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
+    if (statusMessage) statusMessage.textContent = 'الشريك يسحب وينفذ طلبه الآن...';
+    if (actionBtn) {
+      actionBtn.disabled = true;
+      actionBtn.textContent = 'انتظر دورك';
+    }
   }
 }
 
 // ====================== سحب وإرسال الطلب ======================
-actionBtn.addEventListener('click', sendRandomRequest);
-
 function sendRandomRequest() {
   if (!isMyTurn) return;
 
@@ -197,28 +274,14 @@ function receiveRequest(data) {
   if (!data) return;
 
   currentRequest = data;
-  requestText.textContent = data.text;
-  requestImage.innerHTML = data.image || '💋';
-  requestModal.classList.remove('hidden');
+  const requestText = document.getElementById('request-text');
+  const requestImage = document.getElementById('request-image');
+  const requestModal = document.getElementById('request-modal');
+
+  if (requestText) requestText.textContent = data.text;
+  if (requestImage) requestImage.innerHTML = data.image || '💋';
+  if (requestModal) requestModal.classList.remove('hidden');
 }
-
-document.getElementById('btn-done').addEventListener('click', () => {
-  requestModal.classList.add('hidden');
-  
-  const nextTurnRole = currentRole;
-
-  if (database) {
-    database.ref(`rooms/${roomCode}/currentRequest`).remove();
-    database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole);
-  } else {
-    localStorage.removeItem(`request_${roomCode}`);
-    localStorage.setItem(`turn_${roomCode}`, nextTurnRole);
-  }
-});
-
-document.getElementById('btn-hide').addEventListener('click', () => {
-  requestModal.classList.add('hidden');
-});
 
 // ====================== الاستماع للتغييرات ======================
 function startListening() {
@@ -267,26 +330,10 @@ function startListening() {
 }
 
 // ====================== تعديل وإدارة القائمة ======================
-document.getElementById('btn-edit-list').addEventListener('click', () => {
-  renderTasksList();
-  showScreen('edit');
-});
-
-document.getElementById('btn-back').addEventListener('click', () => {
-  updateTurnUI();
-  showScreen('game');
-});
-
-document.getElementById('btn-add-task').addEventListener('click', () => {
-  const newTask = prompt('اكتب طلباً جديداً تريد إضافته لتنفذه:');
-  if (newTask && newTask.trim()) {
-    myTasks.push(newTask.trim());
-    saveMyTasks();
-    renderTasksList();
-  }
-});
-
 function renderTasksList() {
+  const tasksList = document.getElementById('tasks-list');
+  if (!tasksList) return;
+  
   tasksList.innerHTML = '';
   myTasks.forEach((task, index) => {
     const div = document.createElement('div');
@@ -319,19 +366,19 @@ window.deleteTask = function(index) {
   }
 };
 
-// ====================== خروج ======================
-document.getElementById('btn-logout').addEventListener('click', () => {
-  if (confirm('هل تريد الخروج؟')) {
-    location.reload();
-  }
-});
-
 // ====================== التنقل بين الشاشات ======================
 function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  if (name === 'login') loginScreen.classList.add('active');
-  if (name === 'game') gameScreen.classList.add('active');
-  if (name === 'edit') editScreen.classList.add('active');
+  const loginScreen = document.getElementById('login-screen');
+  const gameScreen = document.getElementById('game-screen');
+  const editScreen = document.getElementById('edit-screen');
+
+  if (loginScreen) loginScreen.classList.remove('active');
+  if (gameScreen) gameScreen.classList.remove('active');
+  if (editScreen) editScreen.classList.remove('active');
+
+  if (name === 'login' && loginScreen) loginScreen.classList.add('active');
+  if (name === 'game' && gameScreen) gameScreen.classList.add('active');
+  if (name === 'edit' && editScreen) editScreen.classList.add('active');
 }
 
 showScreen('login');
