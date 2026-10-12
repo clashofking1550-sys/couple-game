@@ -10,7 +10,6 @@ const firebaseConfig = {
   measurementId: "G-BCF7W6B3YM"
 };
 
-// تفعيل Firebase
 let database = null;
 try {
   firebase.initializeApp(firebaseConfig);
@@ -19,9 +18,9 @@ try {
   console.warn("Firebase غير مفعّل - يعمل في الوضع المحلي فقط");
 }
 
-// ====================== القوائم الافتراضية المحدثة (40 طلباً لكل طرف) ======================
+// ====================== القوائم الافتراضية ======================
 
-// طلبات الزوجة التي يطلبها الزوج منها (تركز على الإثارة البصرية والأنوثة والدلال)
+// 1. طلبات الزوج (يختار منها الزوج ليرسلها للزوجة)
 const defaultHusbandTasks = [
   "اخلعي جزءاً من ملابسك ببطء أمام الكاميرا وأنت تنظرين إليّ بشهوة.",
   "المسي حلماتك ببطء ودلكيهما حتى تحمرا وأنت تتأوهين.",
@@ -59,13 +58,13 @@ const defaultHusbandTasks = [
   "أرسلي قبلة طويلة ومثيرة في الهواء مع غمزة من عينيك.",
   "تلمسي رقبتك ونزولاً إلى صدرك بأطراف أصابعك الحنونة.",
   "همسي بكلمات جريئة ودافئة عن مدى اشتياقك لقربي.",
-  "ضع يدي على صدرك واجعلينا نتخيل اللحظة معاً.",
+  "ضعي يدي على صدرك واجعلينا نتخيل اللحظة معاً.",
   "اخترقي عيني بنظراتك واطلبي مني الحركة التي تمتعك أكثر.",
   "المسي شفاهك بإصبعك ثم مرريه على جسدك ببطء شديد.",
   "قولي بصوت خافت: «كل جزء في جسدي ينتظر لمساتك الليلة»."
 ];
 
-// طلبات الزوج التي تطلبها الزوجة منه (تركز على القوة، الرجولة، المداعبة والإثارة)
+// 2. طلبات الزوجة (تختار منها الزوجة لترسلها للزوج)
 const defaultWifeTasks = [
   "انزع قميصك ببطء وأرني صدرك وعضلاتك وأنت تتلمسها.",
   "أمسك قضيبك أمام الكاميرا ودلّكه ببطء وأنت تنظر إليّ بشهوة.",
@@ -106,11 +105,11 @@ const defaultWifeTasks = [
   "أرسل فيديو وأنت تصل تقريباً للذروة ثم تتوقف فجأة.",
   "أنهِ أمام الكاميرا وأرني وجهك وقضيبك لحظة القذف.",
   "اقترب واطبع قبلة دافئة على الكاميرا وكأنك تقبل شفتي.",
-  "قولي لي بصوت رجولي حنون: «أنتِ أنثاي الوحيدة والمثيرة دائماً»."
+  "قل لي بصوت رجولي حنون: «أنتِ أنثاي الوحيدة والمثيرة دائماً»."
 ];
 
 // ====================== حالة التطبيق ======================
-let currentRole = null;        // 'husband' أو 'wife'
+let currentRole = null; // 'husband' أو 'wife'
 let roomCode = null;
 let myTasks = [];
 let isMyTurn = false;
@@ -169,10 +168,13 @@ function loadMyTasks() {
   if (saved) {
     myTasks = JSON.parse(saved);
   } else {
-    // الزوج يستخدم مهام الزوجة لكي يطلبها منها، والعكس صحيح!
-    myTasks = currentRole === 'husband' ? [...defaultWifeTasks] : [...defaultHusbandTasks];
-    saveMyTasks();
+    resetToDefaultTasks();
   }
+}
+
+function resetToDefaultTasks() {
+  myTasks = currentRole === 'husband' ? [...defaultHusbandTasks] : [...defaultWifeTasks];
+  saveMyTasks();
 }
 
 function saveMyTasks() {
@@ -189,25 +191,38 @@ function setupGameUI() {
 function updateTurnUI() {
   if (isMyTurn) {
     turnText.textContent = currentRole === 'husband' ? 'دور الزوج (أنت تطلب)' : 'دور الزوجة (أنتِ تطلبين)';
-    statusMessage.textContent = 'حان دورك لإرسال طلب للطرف الآخر!';
-    actionBtn.disabled = false;
-    actionBtn.textContent = 'أرسل طلباً عشوائياً';
+    statusMessage.textContent = `لديك ${myTasks.length} طلب في القائمة – اضغط لإرسال طلب عشوائي`;
+    actionBtn.disabled = myTasks.length === 0;
+    actionBtn.textContent = myTasks.length > 0 ? 'أرسل طلباً عشوائياً' : 'انتهت الطلبات! أعد ملء القائمة';
   } else {
     turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
-    statusMessage.textContent = 'في انتظار طلب أو تنفيذ الطرف الآخر...';
+    statusMessage.textContent = 'في انتظار الطرف الآخر...';
     actionBtn.disabled = true;
     actionBtn.textContent = 'انتظر دورك';
   }
 }
 
-// ====================== إرسال طلب ======================
+// ====================== إرسال طلب بدون تكرار ======================
 actionBtn.addEventListener('click', sendRandomRequest);
 
 function sendRandomRequest() {
-  if (!isMyTurn || myTasks.length === 0) return;
+  if (!isMyTurn) return;
 
+  if (myTasks.length === 0) {
+    if (confirm('انتهت كافة الطلبات في قائمتك! هل تريد إعادة تحميل القائمة الافتراضية؟')) {
+      resetToDefaultTasks();
+      updateTurnUI();
+    }
+    return;
+  }
+
+  // اختار عنصر عشوائي
   const randomIndex = Math.floor(Math.random() * myTasks.length);
   const task = myTasks[randomIndex];
+
+  // حذف الطلب من القائمة لمنع التكرار
+  myTasks.splice(randomIndex, 1);
+  saveMyTasks();
 
   const requestData = {
     text: task,
@@ -216,7 +231,6 @@ function sendRandomRequest() {
     image: '🔥'
   };
 
-  // تبديل الدور فوراً للطرف الآخر عند الإرسال
   const nextTurnRole = currentRole === 'husband' ? 'wife' : 'husband';
 
   if (database) {
@@ -231,7 +245,7 @@ function sendRandomRequest() {
   updateTurnUI();
 }
 
-// ====================== استقبال الطلب ======================
+// ====================== استقبال الطلب وتنفيذه ======================
 function receiveRequest(data) {
   if (!data || data.from === currentRole) return;
 
@@ -244,8 +258,8 @@ function receiveRequest(data) {
 document.getElementById('btn-done').addEventListener('click', () => {
   requestModal.classList.add('hidden');
   
-  // الشخص الذي استقبل الطلب ونفذه (مثلاً الزوجة) أصبح دوره الآن هو من يرسل طلباً جديداً للزوج!
-  const nextTurnRole = currentRole; // الدور الحالي يصبح هو صاحب الطلب القادم
+  // بعد التنفيذ، تحويل الدور للشخص الذي أتم التنفيذ ليرسل هو طلبه القادم
+  const nextTurnRole = currentRole;
 
   if (database) {
     database.ref(`rooms/${roomCode}/currentRequest`).remove();
@@ -263,10 +277,8 @@ document.getElementById('btn-hide').addEventListener('click', () => {
 // ====================== الاستماع للتغييرات ======================
 function startListening() {
   if (database) {
-    // الاستماع لتغييرات الدور
     database.ref(`rooms/${roomCode}/turn`).on('value', (snap) => {
       const turn = snap.val();
-      // إذا لم يكن الدور محدد بعد، نعتبر أن الزوج يبدأ أولاً
       if (turn === null) {
         if (currentRole === 'husband') {
           database.ref(`rooms/${roomCode}/turn`).set('husband');
@@ -278,7 +290,6 @@ function startListening() {
       updateTurnUI();
     });
 
-    // الاستماع للطلبات الجديدة
     database.ref(`rooms/${roomCode}/currentRequest`).on('value', (snap) => {
       const data = snap.val();
       if (data && data.from !== currentRole) {
@@ -286,7 +297,6 @@ function startListening() {
       }
     });
   } else {
-    // وضع محلي للتجربة
     const savedTurn = localStorage.getItem(`turn_${roomCode}`);
     isMyTurn = !savedTurn || savedTurn === currentRole;
     updateTurnUI();
@@ -310,18 +320,19 @@ function startListening() {
   }
 }
 
-// ====================== تعديل القائمة ======================
+// ====================== تعديل وإدارة القائمة ======================
 document.getElementById('btn-edit-list').addEventListener('click', () => {
   renderTasksList();
   showScreen('edit');
 });
 
 document.getElementById('btn-back').addEventListener('click', () => {
+  updateTurnUI();
   showScreen('game');
 });
 
 document.getElementById('btn-add-task').addEventListener('click', () => {
-  const newTask = prompt('اكتب الطلب الجديد:');
+  const newTask = prompt('اكتب الطلب الجديد الذي تريد إضافته لقائمتك:');
   if (newTask && newTask.trim()) {
     myTasks.push(newTask.trim());
     saveMyTasks();
@@ -369,7 +380,7 @@ document.getElementById('btn-logout').addEventListener('click', () => {
   }
 });
 
-// ====================== مساعدة ======================
+// ====================== التنقل بين الشاشات ======================
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   if (name === 'login') loginScreen.classList.add('active');
@@ -377,5 +388,4 @@ function showScreen(name) {
   if (name === 'edit') editScreen.classList.add('active');
 }
 
-// بدء التطبيق
 showScreen('login');
