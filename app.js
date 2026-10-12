@@ -1,13 +1,14 @@
 // ====================== إعدادات Firebase ======================
 // ضع هنا بيانات مشروعك من Firebase Console
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "XXXX",
-  appId: "1:XXXX:web:XXXX"
+  apiKey: "AIzaSyBDpevzaNnyk0Nyk7-1L-PFPVgz2rlHvQ",
+  authDomain: "couple-game-aeec9.firebaseapp.com",
+  databaseURL: "https://couple-game-aeec9-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "couple-game-aeec9",
+  storageBucket: "couple-game-aeec9.firebasestorage.app",
+  messagingSenderId: "132755870810",
+  appId: "1:132755870810:web:4f064870e2cb427a6774",
+  measurementId: "G-BCF7W6B3YM"
 };
 
 // تفعيل Firebase (سيتم تجاهله إذا لم تضع المفاتيح)
