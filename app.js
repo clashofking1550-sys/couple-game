@@ -4,7 +4,7 @@ const firebaseConfig = {
   authDomain: "couple-game-aeec9.firebaseapp.com",
   databaseURL: "https://couple-game-aeec9-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "couple-game-aeec9",
-  storageBucket: "couple-game-aeec9.firebasestorage.app",
+  storageBucket: "couple-game-aeec9.appspot.com",
   messagingSenderId: "132755870810",
   appId: "1:132755870810:web:4f064870e2cb427a6774",
   measurementId: "G-BCF7W6B3YM"
@@ -12,40 +12,16 @@ const firebaseConfig = {
 
 let database = null;
 try {
-  firebase.initializeApp(firebaseConfig);
-  database = firebase.database();
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    database = firebase.database();
+  }
 } catch (e) {
-  console.warn("Firebase غير مفعّل - يعمل في الوضع المحلي فقط");
+  console.warn("Firebase غير مفعّل - يعمل في الوضع المحلي فقط", e);
 }
 
 // ====================== القوائم الافتراضية ======================
-
-// 1. قائمة الزوج (الطلبات التي يطلبها منه الآخرون / أو يطلبها منه الشريك، وينفذها هو)
-const defaultHusbandExecutionTasks = [
-  "انزع قميصك ببطء وأرني صدرك وعضلاتك وأنت تتلمسها.",
-  "أمسك قضيبك أمام الكاميرا ودلّكه ببطء وأنت تنظر إليّ بشهوة.",
-  "قل لي بصوت خشن ومثير: «أنا ملكك وحدك ولن أتركك أبداً».",
-  "أرسل لي فيديو قصير وأنت تتنفس بصوت عالٍ وتتخيلني معك.",
-  "اقترب من الكاميرا واهمس بكلمات جريئة عما ستفعله بي الليلة.",
-  "تخيل أنني مستلقية أمامك، واركع كأنك ستبدأ بمتعتي.",
-  "أرني كيف تفرك قضيبك بإبهامك وأنت تنظر بعيني مباشرة.",
-  "قل لي أقذر وأجرأ كلمة تحب أن تسمعني أقولها لك في السر.",
-  "امسك قضيبك بقوة من القاعدة إلى الرأس وأرني كيف ينبض.",
-  "تحدث معي بصوت واثق ومثير وأخبرني كم تشتهي جسدي.",
-  "أرسل لي صورة مقربة وأنت تضغط على قضيبك بحجمه الكامل.",
-  "قل لي: «أريد أن أملأ كل إنش في جسدك برغبتي الليلة».",
-  "أرني كيف تداعب خصيتيك ببطء وأنت تتأوه باسمي.",
-  "تخيل أنني أمتصك الآن، وتصرف بحركات فمك ووجهك بناءً على ذلك.",
-  "قل لي كيف ستجعلني أصل إلى الذروة بين ذراعيك الليلة.",
-  "دلّك كامل طول قضيبك بالزيت حتى يصبح لامعاً وأرني.",
-  "اضغط على رأس قضيبك بأصبعك وأرني السائل وهو يخرج ببطء.",
-  "تحدث معي بكلام شهواني جاد واطلب مني أن أكون مطيعة لك.",
-  "أرني كيف تضرب قضيبك برفق على راحة يدك بجرأة.",
-  "قل لي أين تريد أن أضع فمي ولساني أولاً عندما ألقاك."
-];
-
-// 2. قائمة الزوجة (الطلبات التي تطلبها منها زوجها أو يطلبها منها الشريك، وتنفذها هي)
-const defaultWifeExecutionTasks = [
+const defaultHusbandCreatedForWife = [
   "اخلعي جزءاً من ملابسك ببطء أمام الكاميرا وأنت تنظرين إليّ بشهوة.",
   "المسي حلماتك ببطء ودلكيهما حتى تحمرا وأنت تتأوهين.",
   "انحني ببطء وأريني مؤخرتك ومنحنيات جسمك بوضوح.",
@@ -55,17 +31,20 @@ const defaultWifeExecutionTasks = [
   "اقتربي من الكاميرا وضعي أصبعك في فمك وامتصيه ببطء شديد.",
   "استلقي على السرير وارفعي ساقيك عالياً وأريني كل شيء.",
   "قولي لي بصوت عالٍ ومثير: «أنا أشتعل شوقاً لجسدك الليلة».",
-  "امسحي جسمك بالزيت ببطء واجعلي بشرتك تلمع أمامي.",
-  "انظري إلى الكاميرا والعقي شفتيك بنظرة ملؤها الشهوة.",
-  "اركعي أمام الكاميرا وقولي: «أنا ملكك وحدك الليلة يا حبيبي».",
-  "المسي نفسك بأصابعك وأريني كيف تستمتعين من أجلي.",
-  "ضعي ثلجاً على حلماتك وأريني ردة فعلك المشتعلة.",
-  "قولي لي ثلاثة أشياء جريئة تريدين أن أفعلها بجسمك الليلة.",
-  "ارتدي جوارب طويلة فقط ودعيني أتأمل جسدك الفاتن.",
-  "اجلسي على الكرسي بوضعية مثيرة جداً وافتحي ساقيك ببطء.",
-  "دلّكي ثديك بحركات دائرية وأخبريني كم تحبين لمساتي.",
-  "قولي كلمات جريئة عن الشيء الذي ترغبين أن أفعله بفمك.",
-  "انهي بنفسك أمام الكاميرا وأريني وجهك لحظة الوصول للذروة."
+  "امسحي جسمك بالزيت ببطء واجعلي بشرتك تلمع أمامي."
+];
+
+const defaultWifeCreatedForHusband = [
+  "انزع قميصك ببطء وأرني صدرك وعضلاتك وأنت تتلمسها.",
+  "أمسك قضيبك أمام الكاميرا ودلّكه ببطء وأنت تنظر إليّ بشهوة.",
+  "قل لي بصوت خشن ومثير: «أنا ملكك وحدك ولن أتركك أبداً».",
+  "أرسل لي فيديو قصير وأنت تتنفس بصوت عالٍ وتتخيلني معك.",
+  "اقترب من الكاميرا واهمس بكلمات جريئة عما ستفعله بي الليلة.",
+  "تخيل أنني مستلقية أمامك، واركع كأنك ستبدأ بمتعتي.",
+  "أرني كيف تفرك قضيبك بإبهامك وأنت تنظر بعيني مباشرة.",
+  "قل لي أقذر وأجرأ كلمة تحب أن تسمعني أقولها لك في السر.",
+  "امسك قضيبك بقوة من القاعدة إلى الرأس وأرني كيف ينبض.",
+  "تحدث معي بصوت واثق ومثير وأخبرني كم تشتهي جسدي."
 ];
 
 // ====================== حالة التطبيق ======================
@@ -87,18 +66,24 @@ const actionBtn = document.getElementById('action-btn');
 const requestText = document.getElementById('request-text');
 const requestImage = document.getElementById('request-image');
 const tasksList = document.getElementById('tasks-list');
+const btnHusband = document.getElementById('btn-husband');
+const btnWife = document.getElementById('btn-wife');
 
-// ====================== أحداث الدخول ======================
-document.getElementById('btn-husband').addEventListener('click', () => {
+// ====================== أحداث الدخول (تم تصحيحها لتعمل بسلاسة) ======================
+btnHusband.addEventListener('click', () => {
   currentRole = 'husband';
-  document.getElementById('btn-husband').style.outline = '3px solid #fff';
-  document.getElementById('btn-wife').style.outline = 'none';
+  btnHusband.style.border = '3px solid #fff';
+  btnHusband.style.transform = 'scale(1.05)';
+  btnWife.style.border = 'none';
+  btnWife.style.transform = 'scale(1)';
 });
 
-document.getElementById('btn-wife').addEventListener('click', () => {
+btnWife.addEventListener('click', () => {
   currentRole = 'wife';
-  document.getElementById('btn-wife').style.outline = '3px solid #fff';
-  document.getElementById('btn-husband').style.outline = 'none';
+  btnWife.style.border = '3px solid #fff';
+  btnWife.style.transform = 'scale(1.05)';
+  btnHusband.style.border = 'none';
+  btnHusband.style.transform = 'scale(1)';
 });
 
 document.getElementById('btn-join').addEventListener('click', joinRoom);
@@ -106,7 +91,7 @@ document.getElementById('btn-join').addEventListener('click', joinRoom);
 function joinRoom() {
   const code = document.getElementById('room-code').value.trim();
   if (!currentRole) {
-    alert('اختر أولاً: زوج أو زوجة');
+    alert('الرجاء اختيار الدور أولاً بالضغط على أيقونة (زوج) أو (زوجة)');
     return;
   }
   if (!code || code.length < 4) {
@@ -121,21 +106,23 @@ function joinRoom() {
   showScreen('game');
 }
 
-// ====================== تحميل الطلبات ======================
+// ====================== تحميل القائمة ======================
 function loadMyTasks() {
   const key = `tasks_${roomCode}_${currentRole}`;
   const saved = localStorage.getItem(key);
   if (saved) {
-    myTasks = JSON.parse(saved);
+    try {
+      myTasks = JSON.parse(saved);
+    } catch(e) {
+      resetToDefaultTasks();
+    }
   } else {
     resetToDefaultTasks();
   }
 }
 
 function resetToDefaultTasks() {
-  // الزوج يملك قائمة المهام التي سينفذها هو
-  // الزوجة تملك قائمة المهام التي ستنفذها هي
-  myTasks = currentRole === 'husband' ? [...defaultHusbandExecutionTasks] : [...defaultWifeExecutionTasks];
+  myTasks = currentRole === 'husband' ? [...defaultWifeCreatedForHusband] : [...defaultHusbandCreatedForWife];
   saveMyTasks();
 }
 
@@ -152,26 +139,26 @@ function setupGameUI() {
 
 function updateTurnUI() {
   if (isMyTurn) {
-    turnText.textContent = currentRole === 'husband' ? 'دورك (اسحب مهمتك لتنفذها)' : 'دورك (اسحبي مهمتك لتنفذيها)';
-    statusMessage.textContent = `لديك ${myTasks.length} مهمة في قائمتك – اضغط لسحب مهمة وعرضها لتنفذها`;
+    turnText.textContent = currentRole === 'husband' ? 'دورك (اسحب طلباً لتنفذه)' : 'دورك (اسحبي طلباً لتنفذيه)';
+    statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب وتنفذه`;
     actionBtn.disabled = myTasks.length === 0;
-    actionBtn.textContent = myTasks.length > 0 ? 'اسحب مهمتي للتنفيذ' : 'انتهت المهام! أعد تعيين القائمة';
+    actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً ونفذه' : 'انتهت الطلبات! أعد تعيين القائمة';
   } else {
     turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
-    statusMessage.textContent = 'الطرف الآخر يسحب وينفذ مهلته الآن...';
+    statusMessage.textContent = 'الشريك يسحب وينفذ طلبه الآن...';
     actionBtn.disabled = true;
     actionBtn.textContent = 'انتظر دورك';
   }
 }
 
-// ====================== سحب وإرسال الطلب للتنفيذ ======================
+// ====================== سحب وإرسال الطلب ======================
 actionBtn.addEventListener('click', sendRandomRequest);
 
 function sendRandomRequest() {
   if (!isMyTurn) return;
 
   if (myTasks.length === 0) {
-    if (confirm('انتهت كافة المهام في قائمتك! هل تريد إعادة تحميل القائمة الافتراضية؟')) {
+    if (confirm('انتهت كافة الطلبات في قائمتك! هل تريد إعادة تحميل القائمة الافتراضية؟')) {
       resetToDefaultTasks();
       updateTurnUI();
     }
@@ -181,13 +168,12 @@ function sendRandomRequest() {
   const randomIndex = Math.floor(Math.random() * myTasks.length);
   const task = myTasks[randomIndex];
 
-  // استبعاد المهمة من القائمة كي لا تتكرر
   myTasks.splice(randomIndex, 1);
   saveMyTasks();
 
   const requestData = {
     text: task,
-    from: currentRole, // الشخص الذي سحب المهمة لتنفيذها
+    from: currentRole,
     timestamp: Date.now(),
     image: '🔥'
   };
@@ -206,7 +192,7 @@ function sendRandomRequest() {
   updateTurnUI();
 }
 
-// ====================== استقبال وعرض الطلب للشريكين ======================
+// ====================== استقبال وعرض الطلب ======================
 function receiveRequest(data) {
   if (!data) return;
 
@@ -219,7 +205,6 @@ function receiveRequest(data) {
 document.getElementById('btn-done').addEventListener('click', () => {
   requestModal.classList.add('hidden');
   
-  // بعد إتمام التنفيذ، ينتقل الدور للطرف الآخر ليسحب مهمته هو
   const nextTurnRole = currentRole;
 
   if (database) {
@@ -293,7 +278,7 @@ document.getElementById('btn-back').addEventListener('click', () => {
 });
 
 document.getElementById('btn-add-task').addEventListener('click', () => {
-  const newTask = prompt('اكتب مهمة جديدة تريد إضافتها لقائمتك لتنفذها:');
+  const newTask = prompt('اكتب طلباً جديداً تريد إضافته لتنفذه:');
   if (newTask && newTask.trim()) {
     myTasks.push(newTask.trim());
     saveMyTasks();
@@ -318,7 +303,7 @@ function renderTasksList() {
 }
 
 window.editTask = function(index) {
-  const newText = prompt('عدّل المهمة:', myTasks[index]);
+  const newText = prompt('عدّل الطلب:', myTasks[index]);
   if (newText && newText.trim()) {
     myTasks[index] = newText.trim();
     saveMyTasks();
@@ -327,12 +312,12 @@ window.editTask = function(index) {
 };
 
 window.deleteTask = function(index) {
-  if (confirm('هل تريد حذف هذه المهمة؟')) {
+  if (confirm('هل تريد حذف هذا الطلب؟')) {
     myTasks.splice(index, 1);
     saveMyTasks();
     renderTasksList();
   }
-});
+};
 
 // ====================== خروج ======================
 document.getElementById('btn-logout').addEventListener('click', () => {
