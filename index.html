@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>لعبة المهام بين الزوجين</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+  <!-- ========== شاشة الدخول ========== -->
+  <div id="login-screen" class="screen active">
+    <div class="login-container">
+      <h1>🔥 لعبة المهام بين الزوجين 💋</h1>
+      <p class="subtitle">للأزواج فقط • سرية تامة</p>
+
+      <div class="role-buttons">
+        <button id="btn-husband" class="role-btn husband-btn">
+          دخول كزوج 🔥
+        </button>
+        <button id="btn-wife" class="role-btn wife-btn">
+          دخول كالزوجة 💋
+        </button>
+      </div>
+
+      <div class="room-section">
+        <label>رمز الغرفة (نفس الرمز للطرفين)</label>
+        <input type="text" id="room-code" placeholder="مثال: 73921" maxlength="6" />
+        <button id="btn-join" class="join-btn">انضمام / إنشاء غرفة</button>
+      </div>
+
+      <p class="hint">أنشئ رمزاً جديداً أو استخدم نفس الرمز مع شريكك</p>
+    </div>
+  </div>
+
+  <!-- ========== واجهة اللعب ========== -->
+  <div id="game-screen" class="screen">
+    <div id="theme-wrapper">
+      <!-- شريط الدور -->
+      <div id="turn-bar">
+        <span id="turn-text">دور الزوج</span>
+      </div>
+
+      <!-- محتوى الواجهة -->
+      <div class="game-content">
+        <div id="status-message">حان دورك الآن</div>
+
+        <button id="action-btn" class="big-action-btn" disabled>
+          أرسل طلباً عشوائياً
+        </button>
+
+        <div class="bottom-actions">
+          <button id="btn-edit-list" class="secondary-btn">تعديل قائمتي</button>
+          <button id="btn-logout" class="secondary-btn">خروج</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== نافذة استلام الطلب ========== -->
+  <div id="request-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>🔥 طلب جديد 🔥</h2>
+      <div id="request-image" class="request-image">💋</div>
+      <p id="request-text" class="request-text"></p>
+      <button id="btn-done" class="done-btn">تم التنفيذ – دورك الآن</button>
+      <button id="btn-hide" class="hide-btn">إخفاء مؤقتاً</button>
+    </div>
+  </div>
+
+  <!-- ========== شاشة تعديل القائمة ========== -->
+  <div id="edit-screen" class="screen">
+    <div class="edit-header">
+      <h2>قائمة طلباتي</h2>
+      <button id="btn-back" class="back-btn">← رجوع</button>
+    </div>
+    <div id="tasks-list" class="tasks-list"></div>
+    <button id="btn-add-task" class="add-task-btn">+ إضافة طلب جديد</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

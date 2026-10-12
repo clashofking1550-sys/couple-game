@@ -1,0 +1,397 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: #111;
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.screen {
+  display: none;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* ========== شاشة الدخول ========== */
+#login-screen {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-container {
+  background: rgba(255,255,255,0.05);
+  border-radius: 24px;
+  padding: 40px 30px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.login-container h1 {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #aaa;
+  margin-bottom: 30px;
+  font-size: 0.95rem;
+}
+
+.role-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.role-btn {
+  padding: 18px;
+  font-size: 1.3rem;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.role-btn:active {
+  transform: scale(0.97);
+}
+
+.husband-btn {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  color: white;
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+}
+
+.wife-btn {
+  background: linear-gradient(135deg, #e84393, #fd79a8);
+  color: white;
+  box-shadow: 0 8px 20px rgba(232, 67, 147, 0.4);
+}
+
+.room-section {
+  margin-top: 10px;
+}
+
+.room-section label {
+  display: block;
+  margin-bottom: 8px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+#room-code {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.3rem;
+  text-align: center;
+  border-radius: 12px;
+  border: 2px solid #444;
+  background: #222;
+  color: white;
+  letter-spacing: 4px;
+  margin-bottom: 12px;
+}
+
+.join-btn {
+  width: 100%;
+  padding: 14px;
+  background: #00b894;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.hint {
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: #777;
+}
+
+/* ========== واجهة اللعب ========== */
+#theme-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ثيم الزوج */
+.theme-husband {
+  background: linear-gradient(180deg, #8b0000, #c0392b, #e74c3c);
+}
+
+/* ثيم الزوجة */
+.theme-wife {
+  background: linear-gradient(180deg, #f8a5c2, #f78fb3, #e84393);
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255,100,100,0.2) 0%, transparent 40%);
+}
+
+#turn-bar {
+  padding: 18px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: bold;
+  background: rgba(0,0,0,0.25);
+  letter-spacing: 1px;
+}
+
+.game-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  gap: 30px;
+}
+
+#status-message {
+  font-size: 1.2rem;
+  background: rgba(0,0,0,0.3);
+  padding: 12px 24px;
+  border-radius: 30px;
+  text-align: center;
+}
+
+.big-action-btn {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  transition: transform 0.2s, opacity 0.2s;
+  line-height: 1.4;
+  padding: 20px;
+}
+
+.big-action-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.big-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.theme-husband .big-action-btn {
+  background: linear-gradient(145deg, #c0392b, #922b21);
+}
+
+.theme-wife .big-action-btn {
+  background: linear-gradient(145deg, #e84393, #c44569);
+}
+
+.bottom-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.secondary-btn {
+  padding: 12px 22px;
+  border-radius: 30px;
+  border: 2px solid rgba(255,255,255,0.4);
+  background: rgba(0,0,0,0.2);
+  color: white;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+/* ========== نافذة الطلب ========== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #1e1e2f;
+  border-radius: 24px;
+  padding: 30px 25px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  border: 2px solid #e74c3c;
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+  color: #ff6b6b;
+}
+
+.request-image {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 20px;
+  background: #2d2d44;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  overflow: hidden;
+}
+
+.request-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.request-text {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  color: #f1f1f1;
+}
+
+.done-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #00b894, #00cec9);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.15rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.hide-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #555;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* ========== شاشة تعديل القائمة ========== */
+#edit-screen {
+  background: #1a1a2e;
+  padding: 20px;
+}
+
+.edit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background: #444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.task-item {
+  background: #2d2d44;
+  padding: 14px 16px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-item span {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.task-actions button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-edit {
+  background: #0984e3;
+  color: white;
+}
+
+.btn-delete {
+  background: #d63031;
+  color: white;
+}
+
+.add-task-btn {
+  width: 100%;
+  padding: 16px;
+  background: #00b894;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* تحسينات للجوال */
+@media (max-width: 400px) {
+  .big-action-btn {
+    width: 180px;
+    height: 180px;
+    font-size: 1.1rem;
+  }
+  .login-container h1 {
+    font-size: 1.5rem;
+  }
+}
