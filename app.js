@@ -18,11 +18,8 @@ try {
   console.warn("Firebase غير مفعّل - يعمل في الوضع المحلي فقط");
 }
 
-// ====================== القوائم الافتراضية (بدءاً بالطلبات الرومانسية ثم الجريئة) ======================
-
-// 1. القائمة التي يصنعها الزوج للزوجة (تبدأ بالرومانسيات الناعمة ثم تزداد إثارة)
+// ====================== القوائم الافتراضية ======================
 const defaultHusbandCreatedForWife = [
-  // --- مرحلة الإحماء الرومانسي الناعم ---
   "انظري في عيني مباشرة لمدة دقيقة كاملة دون أن تتحدثي أو تضحكي.",
   "اقتربي وضعي رأسك على صَدري واستمعي لنبضات قلبي وأنت تغمضين عينيك.",
   "ارسمي بإصبعك شكلاً خفيفاً أو قلباً على كفّ يدي ببطء.",
@@ -33,23 +30,14 @@ const defaultHusbandCreatedForWife = [
   "ابتسمي لي ابتسامة عريضة ومحببة كما كنت تفعلين في أول لقاء بيننا.",
   "مرّري أطراف أصابعك برفق على شعري واملأيه بلمسات دافئة.",
   "اكتبي لي رسالة قصيرة بكلمات تعبر عن حبك وشوقك لي.",
-  
-  // --- مرحلة الإثارة والجريئة ---
   "اخلعي جزءاً من ملابسك ببطء أمام الكاميرا وأنت تنظرين إليّ بشهوة.",
   "المسي حلماتك ببطء ودلكيهما حتى تحمرا وأنت تتأوهين.",
   "انحني ببطء وأريني مؤخرتك ومنحنيات جسمك بوضوح.",
   "ارفعي ثوبك قليلاً وافتحي ساقيك ببطء ودعيني أتأمل جمالك.",
-  "ضعي وسادة بين ساقيك وفركي نفسك عليها وأنت تنظرين لعيني.",
-  "ارتدي ملابس داخلية شفافة فقط وأرقصي لي رقصة إغراء بطيئة.",
-  "اقتربي من الكاميرا وضعي أصبعك في فمك وامتصيه ببطء شديد.",
-  "استلقي على السرير وارفعي ساقيك عالياً وأريني كل شيء.",
-  "قولي لي بصوت عالٍ ومثير: «أنا أشتعل شوقاً لجسدك الليلة».",
-  "امسحي جسمك بالزيت ببطء واجعلي بشرتك تلمع أمامي."
+  "ضعي وسادة بين ساقيك وفركي نفسك عليها وأنت تنظرين لعيني."
 ];
 
-// 2. القائمة التي تصنعها الزوجة للزوج (تبدأ بالرومانسيات الناعمة ثم تزداد إثارة)
 const defaultWifeCreatedForHusband = [
-  // --- مرحلة الإحماء الرومانسي الناعم ---
   "انظر في عيني بنظرة حب دافئة ودعني أقرأ كم تشتاق لي.",
   "احضنّي بين ذراعيك بقوة وحنان واجعلني أشعر بالأمان الكامل.",
   "قبّل جبهتي برفق وأنت تهمس لي بكلمات شكر وتقدير.",
@@ -60,18 +48,11 @@ const defaultWifeCreatedForHusband = [
   "انحُنِ أمامي قليلاً وامتدح جمالي وأناقتي بعبارات رقيقة.",
   "ضع يدك على قلبي وقل لي بصوت حنون: «هذا المكان ملك لكِ وحدكِ».",
   "امسح بيدك على وجنتي بحركة رقيقة جداً وحنونة.",
-
-  // --- مرحلة الإثارة والجريئة ---
   "انزع قميصك ببطء وأرني صدرك وعضلاتك وأنت تتلمسها.",
   "أمسك قضيبك أمام الكاميرا ودلّكه ببطء وأنت تنظر إليّ بشهوة.",
   "قل لي بصوت خشن ومثير: «أنا ملكك وحدك ولن أتركك أبداً».",
   "أرسل لي فيديو قصير وأنت تتنفس بصوت عالٍ وتتخيلني معك.",
-  "اقترب من الكاميرا واهمس بكلمات جريئة عما ستفعله بي الليلة.",
-  "تخيل أنني مستلقية أمامك، واركع كأنك ستبدأ بمتعتي.",
-  "أرني كيف تفرك قضيبك بإبهامك وأنت تنظر بعيني مباشرة.",
-  "قل لي أقذر وأجرأ كلمة تحب أن تسمعني أقولها لك في السر.",
-  "امسك قضيبك بقوة من القاعدة إلى الرأس وأرني كيف ينبض.",
-  "تحدث معي بصوت واثق ومثير وأخبرني كم تشتهي جسدي."
+  "اقترب من الكاميرا واهمس بكلمات جريئة عما ستفعله بي الليلة."
 ];
 
 // ====================== حالة التطبيق ======================
@@ -132,7 +113,11 @@ function loadMyTasks() {
   const key = `tasks_${roomCode}_${currentRole}`;
   const saved = localStorage.getItem(key);
   if (saved) {
-    myTasks = JSON.parse(saved);
+    try {
+      myTasks = JSON.parse(saved);
+    } catch(e) {
+      resetToDefaultTasks();
+    }
   } else {
     resetToDefaultTasks();
   }
@@ -157,14 +142,14 @@ function setupGameUI() {
 function updateTurnUI() {
   if (isMyTurn) {
     turnText.textContent = currentRole === 'husband' ? 'دورك (اسحب طلباً لتنفذه)' : 'دورك (اسحبي طلباً لتنفذيه)';
-    statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب وتنفذه`;
+    statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب`;
     actionBtn.disabled = myTasks.length === 0;
-    actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً ونفذه' : 'انتهت الطلبات! أعد تعيين القائمة';
+    actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً' : 'انتهت الطلبات! أعد تعيين القائمة';
   } else {
     turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
-    statusMessage.textContent = 'الشريك يسحب وينفذ طلبه الآن...';
+    statusMessage.textContent = 'الطرف الآخر ينفذ مهمته الآن... انتظر حتى ينهيها';
     actionBtn.disabled = true;
-    actionBtn.textContent = 'انتظر دورك';
+    actionBtn.textContent = 'في انتظار إتمام المهمة...';
   }
 }
 
@@ -209,7 +194,7 @@ function sendRandomRequest() {
   updateTurnUI();
 }
 
-// ====================== استقبال وعرض الطلب ======================
+// ====================== استقبال وعرض الطلب للطرفين ======================
 function receiveRequest(data) {
   if (!data) return;
 
@@ -219,10 +204,12 @@ function receiveRequest(data) {
   requestModal.classList.remove('hidden');
 }
 
+// زر إتمام المهمة (يقفل دور الطرف الآخر ولا يسمح له بالتحرك إلا بالضغط هنا)
 document.getElementById('btn-done').addEventListener('click', () => {
   requestModal.classList.add('hidden');
   
-  const nextTurnRole = currentRole;
+  // نقل الدور للشخص الذي كان ينتظر
+  const nextTurnRole = currentRequest ? (currentRequest.from === 'husband' ? 'wife' : 'husband') : currentRole;
 
   if (database) {
     database.ref(`rooms/${roomCode}/currentRequest`).remove();
@@ -257,6 +244,8 @@ function startListening() {
       const data = snap.val();
       if (data) {
         receiveRequest(data);
+      } else {
+        requestModal.classList.add('hidden');
       }
     });
   } else {
@@ -278,12 +267,14 @@ function startListening() {
         if (!currentRequest || currentRequest.timestamp !== data.timestamp) {
           receiveRequest(data);
         }
+      } else {
+        requestModal.classList.add('hidden');
       }
     }, 1000);
   }
 }
 
-// ====================== تعديل وإدارة القائمة ======================
+// ====================== تعديل وإدارة القائمة (مع إضافة ميزة لصق قائمة كاملة) ======================
 document.getElementById('btn-edit-list').addEventListener('click', () => {
   renderTasksList();
   showScreen('edit');
@@ -294,6 +285,7 @@ document.getElementById('btn-back').addEventListener('click', () => {
   showScreen('game');
 });
 
+// زر لإضافة طلب مفرد
 document.getElementById('btn-add-task').addEventListener('click', () => {
   const newTask = prompt('اكتب طلباً جديداً تريد إضافته للقائمة:');
   if (newTask && newTask.trim()) {
@@ -302,6 +294,39 @@ document.getElementById('btn-add-task').addEventListener('click', () => {
     renderTasksList();
   }
 });
+
+// زر جديد لصق واستبدال القائمة كاملة بكلمات جديدة
+const editHeader = document.querySelector('#edit-screen') || document.body;
+let btnPasteAll = document.getElementById('btn-paste-all');
+if (!btnPasteAll) {
+  btnPasteAll = document.createElement('button');
+  btnPasteAll.id = 'btn-paste-all';
+  btnPasteAll.textContent = '📥 استبدال أو لصق قائمة جديدة كاملة';
+  btnPasteAll.className = 'btn-secondary'; // استعمل نفس تصميم الأزرار
+  btnPasteAll.style.cssText = 'margin: 10px; padding: 10px; background: #ff4757; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 90%; max-width: 400px; margin-left: auto; margin-right: auto;';
+  
+  btnPasteAll.onclick = () => {
+    const bulk = prompt('اكتب أو الصق الطلبات الجديدة مفصولة بفاصلة (,) أو كل طلب في سطر:');
+    if (bulk && bulk.trim()) {
+      // تحويل النص المدخل إلى مصفوفة (بناءً على الأسطر أو الفواصل)
+      const newItems = bulk.split(/\r?\n|,/).map(item => item.trim()).filter(item => item.length > 0);
+      if (newItems.length > 0) {
+        if (confirm(`تم رصد ${newItems.length طلب}. هل تريد استبدال القائمة القديمة بها؟`)) {
+          myTasks = newItems;
+          saveMyTasks();
+          renderTasksList();
+          alert('تم تحديث القائمة بنجاح!');
+        }
+      }
+    }
+  };
+  
+  // إدراج الزر فوق قائمة الطلبات في شاشة التعديل
+  const tasksListElem = document.getElementById('tasks-list');
+  if (tasksListElem && tasksListElem.parentNode) {
+    tasksListElem.parentNode.insertBefore(btnPasteAll, tasksListElem);
+  }
+}
 
 function renderTasksList() {
   tasksList.innerHTML = '';
