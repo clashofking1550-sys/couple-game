@@ -11,18 +11,16 @@ const firebaseConfig = {
 };
 
 let database = null;
-let isFirebaseConnected = false;
-
 try {
   if (typeof firebase !== 'undefined') {
     firebase.initializeApp(firebaseConfig);
     database = firebase.database();
   }
 } catch (e) {
-  console.warn("Firebase غير مفعّل - الانقال للوضع المحلي تلقائياً");
+  console.warn("العمل في وضع التخزين المحلي");
 }
 
-// ====================== القوائم الافتراضية المتبادلة الصحيحة ======================
+// ====================== القوائم الافتراضية المتبادلة ======================
 const wifeRequestsForHusband = [
   "انظر في عيني بنظرة حب دافئة ودعني أقرأ كم تشتاق لي.",
   "احضنّي بين ذراعيك بقوة وحنان واجعلني أشعر بالأمان الكامل.",
@@ -56,7 +54,7 @@ let myTasks = [];
 let isMyTurn = false;
 let currentRequest = null;
 
-// ====================== بدء التشغيل عند تحميل الصفحة ======================
+// ====================== عناصر DOM وتشغيل الصفحة ======================
 window.addEventListener('load', () => {
   const btnHusband = document.getElementById('btn-husband');
   const btnWife = document.getElementById('btn-wife');
@@ -95,9 +93,9 @@ window.addEventListener('load', () => {
       
       const nextTurnRole = currentRole;
 
-      if (database && isFirebaseConnected && roomCode) {
-        database.ref(`rooms/${roomCode}/currentRequest`).remove();
-        database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole);
+      if (database && roomCode) {
+        database.ref(`rooms/${roomCode}/currentRequest`).remove().catch(() => {});
+        database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole).catch(() => {});
       } else if (roomCode) {
         localStorage.removeItem(`request_${roomCode}`);
         localStorage.setItem(`turn_${roomCode}`, nextTurnRole);
@@ -132,7 +130,7 @@ window.addEventListener('load', () => {
   const btnAddTask = document.getElementById('btn-add-task');
   if (btnAddTask) {
     btnAddTask.addEventListener('click', () => {
-      const newTask = prompt('اكتب طلباً جديداً تريد إضافته لتنفذه:');
+      const newTask = prompt('اكتب طلباً جديداً لتضيفه إلى قائمتك:');
       if (newTask && newTask.trim()) {
         myTasks.push(newTask.trim());
         saveMyTasks();
@@ -153,7 +151,7 @@ window.addEventListener('load', () => {
   showScreen('login');
 });
 
-// ====================== دالة الدخول الآمنة ======================
+// ====================== دالة الدخول الفوري ======================
 function joinRoom() {
   const roomInput = document.getElementById('room-code');
   const code = roomInput ? roomInput.value.trim() : '';
@@ -170,41 +168,11 @@ function joinRoom() {
   roomCode = code;
   loadMyTasks();
   setupGameUI();
-  
-  // فحص الاتصال مع Firebase بمهلة زمنية لضمان عدم التعليق
-  checkFirebaseConnectionAndStart();
+  startListeningSafe();
   showScreen('game');
 }
 
-function checkFirebaseConnectionAndStart() {
-  if (!database) {
-    startListeningLocal();
-    return;
-  }
-
-  let connected = false;
-  
-  // الاستماع لحالة اتصال السيرفر
-  const connectedRef = database.ref(".info/connected");
-  connectedRef.on("value", (snap) => {
-    if (snap.val() === true) {
-      connected = true;
-      isFirebaseConnected = true;
-      startListeningFirebase();
-    }
-  });
-
-  // إعطاء مهلة 2.5 ثانية، إذا لم يستجب السيرفر يتم العمل محلياً فوراً
-  setTimeout(() => {
-    if (!connected) {
-      console.warn("السيرفر الوسيط لا يستجيب - الانتقال إلى الوضع المحلي");
-      isFirebaseConnected = false;
-      startListeningLocal();
-    }
-  }, 2500);
-}
-
-// ====================== تحميل القائمة المناسبة ======================
+// ====================== تحميل القائمة ======================
 function loadMyTasks() {
   const key = `tasks_${roomCode}_${currentRole}`;
   const saved = localStorage.getItem(key);
@@ -245,17 +213,17 @@ function updateTurnUI() {
 
   if (isMyTurn) {
     if (turnText) turnText.textContent = currentRole === 'husband' ? 'دورك (اسحب طلباً لتنفذه)' : 'دورك (اسحبي طلباً لتنفذيه)';
-    if (statusMessage) statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب وتنفذه`;
+    if (statusMessage) statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب`;
     if (actionBtn) {
       actionBtn.disabled = myTasks.length === 0;
-      actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً ونفذه' : 'انتهت الطلبات! أعد تعيين القائمة';
+      actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً' : 'انتهت الطلبات! أعد تعيين القائمة';
     }
   } else {
     if (turnText) turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
-    if (statusMessage) statusMessage.textContent = 'الشريك يسحب وينفذ طلبه الآن...';
+    if (statusMessage) statusMessage.textContent = 'الطرف الآخر ينفذ مهمته الآن... انتظر حتى ينهيها';
     if (actionBtn) {
       actionBtn.disabled = true;
-      actionBtn.textContent = 'انتظر دورك';
+      actionBtn.textContent = 'في انتظار إتمام المهمة...';
     }
   }
 }
@@ -287,9 +255,9 @@ function sendRandomRequest() {
 
   const nextTurnRole = currentRole === 'husband' ? 'wife' : 'husband';
 
-  if (database && isFirebaseConnected && roomCode) {
-    database.ref(`rooms/${roomCode}/currentRequest`).set(requestData);
-    database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole);
+  if (database && roomCode) {
+    database.ref(`rooms/${roomCode}/currentRequest`).set(requestData).catch(() => {});
+    database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole).catch(() => {});
   } else if (roomCode) {
     localStorage.setItem(`request_${roomCode}`, JSON.stringify(requestData));
     localStorage.setItem(`turn_${roomCode}`, nextTurnRole);
@@ -313,34 +281,44 @@ function receiveRequest(data) {
   if (requestModal) requestModal.classList.remove('hidden');
 }
 
-// ====================== الاستماع في حالة Firebase ======================
-function startListeningFirebase() {
-  database.ref(`rooms/${roomCode}/turn`).on('value', (snap) => {
-    const turn = snap.val();
-    if (turn === null) {
-      if (currentRole === 'husband') {
-        database.ref(`rooms/${roomCode}/turn`).set('husband');
-      }
-      isMyTurn = (currentRole === 'husband');
-    } else {
-      isMyTurn = (turn === currentRole);
-    }
-    updateTurnUI();
-  });
+// ====================== الاستماع الآمن (يعمل أينما كان) ======================
+function startListeningSafe() {
+  if (database && roomCode) {
+    try {
+      database.ref(`rooms/${roomCode}/turn`).on('value', (snap) => {
+        const turn = snap.val();
+        if (turn === null) {
+          if (currentRole === 'husband') {
+            database.ref(`rooms/${roomCode}/turn`).set('husband').catch(() => {});
+          }
+          isMyTurn = (currentRole === 'husband');
+        } else {
+          isMyTurn = (turn === currentRole);
+        }
+        updateTurnUI();
+      }, (error) => {
+        console.warn("خطأ في الاتصال بالسيرفر، تفعيل التزامن المحلي البديل");
+        startListeningLocalFallback();
+      });
 
-  database.ref(`rooms/${roomCode}/currentRequest`).on('value', (snap) => {
-    const data = snap.val();
-    const modal = document.getElementById('request-modal');
-    if (data) {
-      receiveRequest(data);
-    } else {
-      if (modal) modal.classList.add('hidden');
+      database.ref(`rooms/${roomCode}/currentRequest`).on('value', (snap) => {
+        const data = snap.val();
+        const modal = document.getElementById('request-modal');
+        if (data) {
+          receiveRequest(data);
+        } else {
+          if (modal) modal.classList.add('hidden');
+        }
+      });
+    } catch(e) {
+      startListeningLocalFallback();
     }
-  });
+  } else {
+    startListeningLocalFallback();
+  }
 }
 
-// ====================== الاستماع في الوضع المحلي البديل ======================
-function startListeningLocal() {
+function startListeningLocalFallback() {
   const savedTurn = localStorage.getItem(`turn_${roomCode}`);
   isMyTurn = !savedTurn || savedTurn === currentRole;
   updateTurnUI();
