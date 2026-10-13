@@ -20,7 +20,7 @@ try {
 
 // ====================== القوائم الافتراضية الصحيحة والمضبوطة ======================
 
-// 1. القائمة التي تظهر عند الزوج (لينفذها هو: الطلبات التي تريدها الزوجة منه)
+// 1. القائمة التي تظهر عند الزوج (لينفذها هو)
 const wifeRequestsForHusband = [
   "انظر في عيني بنظرة حب دافئة ودعني أقرأ كم تشتاق لي.",
   "احضنّي بين ذراعيك بقوة وحنان واجعلني أشعر بالأمان الكامل.",
@@ -39,7 +39,7 @@ const wifeRequestsForHusband = [
   "اقترب من الكاميرا واهمس بكلمات جريئة عما ستفعله بي الليلة."
 ];
 
-// 2. القائمة التي تظهر عند الزوجة (لتنفذها هي: الطلبات التي يريدها الزوج منها)
+// 2. القائمة التي تظهر عند الزوجة (لتنفذها هي)
 const husbandRequestsForWife = [
   "انظري في عيني مباشرة لمدة دقيقة كاملة دون أن تتحدثي أو تضحكي.",
   "اقتربي وضعي رأسك على صَدري واستمعي لنبضات قلبي وأنت تغمضين عينيك.",
@@ -111,7 +111,7 @@ function joinRoom() {
   showScreen('game');
 }
 
-// ====================== تحميل القائمة المناسبة لكل دور ======================
+// ====================== تحميل القائمة المناسبة ======================
 function loadMyTasks() {
   const key = `tasks_${roomCode}_${currentRole}`;
   const saved = localStorage.getItem(key);
@@ -127,8 +127,6 @@ function loadMyTasks() {
 }
 
 function resetToDefaultTasks() {
-  // إذا دخل الزوج -> تظهر له طلبات الزوجة (لينفذها هو)
-  // إذا دخلت الزوجة -> تظهر لها طلبات الزوج (لتنفذها هي)
   myTasks = currentRole === 'husband' ? [...wifeRequestsForHusband] : [...husbandRequestsForWife];
   saveMyTasks();
 }
@@ -297,36 +295,6 @@ document.getElementById('btn-add-task').addEventListener('click', () => {
     renderTasksList();
   }
 });
-
-// زر لصق واستبدال القائمة كاملة
-const editScreenElem = document.getElementById('edit-screen');
-let btnPasteAll = document.getElementById('btn-paste-all');
-if (!btnPasteAll && editScreenElem) {
-  btnPasteAll = document.createElement('button');
-  btnPasteAll.id = 'btn-paste-all';
-  btnPasteAll.textContent = '📥 استبدال أو لصق قائمة جديدة كاملة';
-  btnPasteAll.style.cssText = 'margin: 10px auto; padding: 10px; background: #ff4757; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 90%; max-width: 400px;';
-  
-  btnPasteAll.onclick = () => {
-    const bulk = prompt('اكتب أو الصق الطلبات الجديدة (كل طلب في سطر أو مفصولة بفاصلة):');
-    if (bulk && bulk.trim()) {
-      const newItems = bulk.split(/\r?\n|,/).map(item => item.trim()).filter(item => item.length > 0);
-      if (newItems.length > 0) {
-        if (confirm(`تم رصد ${newItems.length} طلب. هل تريد استبدال القائمة القديمة بها؟`)) {
-          myTasks = newItems;
-          saveMyTasks();
-          renderTasksList();
-          alert('تم تحديث القائمة بنجاح!');
-        }
-      }
-    }
-  };
-  
-  const tasksListElem = document.getElementById('tasks-list');
-  if (tasksListElem && tasksListElem.parentNode) {
-    tasksListElem.parentNode.insertBefore(btnPasteAll, tasksListElem);
-  }
-}
 
 function renderTasksList() {
   tasksList.innerHTML = '';
