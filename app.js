@@ -20,39 +20,29 @@ try {
 
 // ====================== القوائم الافتراضية ======================
 const defaultHusbandCreatedForWife = [
-  "انظري في عيني مباشرة لمدة دقيقة كاملة دون أن تتحدثي أو تضحكي.",
-  "اقتربي وضعي رأسك على صَدري واستمعي لنبضات قلبي وأنت تغمضين عينيك.",
-  "ارسمي بإصبعك شكلاً خفيفاً أو قلباً على كفّ يدي ببطء.",
-  "اهمسي في أذني بصوت هادئ جداً بأجمل صفة تحبينها في شخصيتي.",
-  "ضعي عطرك المفضل واطبعي قبلة دافئة على خدّي.",
-  "أمسكِ بيدي الاثنتين وقبّلي أطراف أصابعي بحنان.",
-  "اجلسي بقربي وضعي رأسك على كتفي ودعيني أحيطك بذراعي.",
-  "ابتسمي لي ابتسامة عريضة ومحببة كما كنت تفعلين في أول لقاء بيننا.",
-  "مرّري أطراف أصابعك برفق على شعري واملأيه بلمسات دافئة.",
-  "اكتبي لي رسالة قصيرة بكلمات تعبر عن حبك وشوقك لي.",
   "اخلعي جزءاً من ملابسك ببطء أمام الكاميرا وأنت تنظرين إليّ بشهوة.",
   "المسي حلماتك ببطء ودلكيهما حتى تحمرا وأنت تتأوهين.",
   "انحني ببطء وأريني مؤخرتك ومنحنيات جسمك بوضوح.",
   "ارفعي ثوبك قليلاً وافتحي ساقيك ببطء ودعيني أتأمل جمالك.",
-  "ضعي وسادة بين ساقيك وفركي نفسك عليها وأنت تنظرين لعيني."
+  "ضعي وسادة بين ساقيك وفركي نفسك عليها وأنت تنظرين لعيني.",
+  "ارتدي ملابس داخلية شفافة فقط وأرقصي لي رقصة إغراء بطيئة.",
+  "اقتربي من الكاميرا وضعي أصبعك في فمك وامتصيه ببطء شديد.",
+  "استلقي على السرير وارفعي ساقيك عالياً وأريني كل شيء.",
+  "قولي لي بصوت عالٍ ومثير: «أنا أشتعل شوقاً لجسدك الليلة».",
+  "امسحي جسمك بالزيت ببطء واجعلي بشرتك تلمع أمامي."
 ];
 
 const defaultWifeCreatedForHusband = [
-  "انظر في عيني بنظرة حب دافئة ودعني أقرأ كم تشتاق لي.",
-  "احضنّي بين ذراعيك بقوة وحنان واجعلني أشعر بالأمان الكامل.",
-  "قبّل جبهتي برفق وأنت تهمس لي بكلمات شكر وتقدير.",
-  "اقترب مني واهمس بصوت هادئ: «أنتِ أجمل نعمة في حياتي».",
-  "امسك يديّ الاثنتين واطبع عليهما قبلة دافئة ومليئة بالحب.",
-  "دمِج أصابعك بأصابع يدي وشبّكها بثبات ودفء.",
-  "دلك كتفيّ ورقبتي بحركات دائرية خفيفة لتخفيف تعب اليوم.",
-  "انحُنِ أمامي قليلاً وامتدح جمالي وأناقتي بعبارات رقيقة.",
-  "ضع يدك على قلبي وقل لي بصوت حنون: «هذا المكان ملك لكِ وحدكِ».",
-  "امسح بيدك على وجنتي بحركة رقيقة جداً وحنونة.",
   "انزع قميصك ببطء وأرني صدرك وعضلاتك وأنت تتلمسها.",
   "أمسك قضيبك أمام الكاميرا ودلّكه ببطء وأنت تنظر إليّ بشهوة.",
   "قل لي بصوت خشن ومثير: «أنا ملكك وحدك ولن أتركك أبداً».",
   "أرسل لي فيديو قصير وأنت تتنفس بصوت عالٍ وتتخيلني معك.",
-  "اقترب من الكاميرا واهمس بكلمات جريئة عما ستفعله بي الليلة."
+  "اقترب من الكاميرا واهمس بكلمات جريئة عما ستفعله بي الليلة.",
+  "تخيل أنني مستلقية أمامك، واركع كأنك ستبدأ بمتعتي.",
+  "أرني كيف تفرك قضيبك بإبهامك وأنت تنظر بعيني مباشرة.",
+  "قل لي أقذر وأجرأ كلمة تحب أن تسمعني أقولها لك في السر.",
+  "امسك قضيبك بقوة من القاعدة إلى الرأس وأرني كيف ينبض.",
+  "تحدث معي بصوت واثق ومثير وأخبرني كم تشتهي جسدي."
 ];
 
 // ====================== حالة التطبيق ======================
@@ -113,11 +103,7 @@ function loadMyTasks() {
   const key = `tasks_${roomCode}_${currentRole}`;
   const saved = localStorage.getItem(key);
   if (saved) {
-    try {
-      myTasks = JSON.parse(saved);
-    } catch(e) {
-      resetToDefaultTasks();
-    }
+    myTasks = JSON.parse(saved);
   } else {
     resetToDefaultTasks();
   }
@@ -142,14 +128,14 @@ function setupGameUI() {
 function updateTurnUI() {
   if (isMyTurn) {
     turnText.textContent = currentRole === 'husband' ? 'دورك (اسحب طلباً لتنفذه)' : 'دورك (اسحبي طلباً لتنفذيه)';
-    statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب`;
+    statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب وتنفذه`;
     actionBtn.disabled = myTasks.length === 0;
-    actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً' : 'انتهت الطلبات! أعد تعيين القائمة';
+    actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً ونفذه' : 'انتهت الطلبات! أعد تعيين القائمة';
   } else {
     turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
-    statusMessage.textContent = 'الطرف الآخر ينفذ مهمته الآن... انتظر حتى ينهيها';
+    statusMessage.textContent = 'الشريك يسحب وينفذ طلبه الآن...';
     actionBtn.disabled = true;
-    actionBtn.textContent = 'في انتظار إتمام المهمة...';
+    actionBtn.textContent = 'انتظر دورك';
   }
 }
 
@@ -194,7 +180,7 @@ function sendRandomRequest() {
   updateTurnUI();
 }
 
-// ====================== استقبال وعرض الطلب للطرفين ======================
+// ====================== استقبال وعرض الطلب ======================
 function receiveRequest(data) {
   if (!data) return;
 
@@ -204,12 +190,10 @@ function receiveRequest(data) {
   requestModal.classList.remove('hidden');
 }
 
-// زر إتمام المهمة (يقفل دور الطرف الآخر ولا يسمح له بالتحرك إلا بالضغط هنا)
 document.getElementById('btn-done').addEventListener('click', () => {
   requestModal.classList.add('hidden');
   
-  // نقل الدور للشخص الذي كان ينتظر
-  const nextTurnRole = currentRequest ? (currentRequest.from === 'husband' ? 'wife' : 'husband') : currentRole;
+  const nextTurnRole = currentRole;
 
   if (database) {
     database.ref(`rooms/${roomCode}/currentRequest`).remove();
@@ -244,8 +228,6 @@ function startListening() {
       const data = snap.val();
       if (data) {
         receiveRequest(data);
-      } else {
-        requestModal.classList.add('hidden');
       }
     });
   } else {
@@ -267,8 +249,6 @@ function startListening() {
         if (!currentRequest || currentRequest.timestamp !== data.timestamp) {
           receiveRequest(data);
         }
-      } else {
-        requestModal.classList.add('hidden');
       }
     }, 1000);
   }
@@ -285,7 +265,6 @@ document.getElementById('btn-back').addEventListener('click', () => {
   showScreen('game');
 });
 
-// زر لإضافة طلب مفرد
 document.getElementById('btn-add-task').addEventListener('click', () => {
   const newTask = prompt('اكتب طلباً جديداً تريد إضافته للقائمة:');
   if (newTask && newTask.trim()) {
@@ -294,37 +273,6 @@ document.getElementById('btn-add-task').addEventListener('click', () => {
     renderTasksList();
   }
 });
-
-// زر لصق واستبدال القائمة كاملة (تم تصحيح الخطأ النحوي هنا)
-const editHeader = document.querySelector('#edit-screen') || document.body;
-let btnPasteAll = document.getElementById('btn-paste-all');
-if (!btnPasteAll) {
-  btnPasteAll = document.createElement('button');
-  btnPasteAll.id = 'btn-paste-all';
-  btnPasteAll.textContent = '📥 استبدال أو لصق قائمة جديدة كاملة';
-  btnPasteAll.className = 'btn-secondary';
-  btnPasteAll.style.cssText = 'margin: 10px; padding: 10px; background: #ff4757; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 90%; max-width: 400px; margin-left: auto; margin-right: auto;';
-  
-  btnPasteAll.onclick = () => {
-    const bulk = prompt('اكتب أو الصق الطلبات الجديدة مفصولة بفاصلة (,) أو كل طلب في سطر:');
-    if (bulk && bulk.trim()) {
-      const newItems = bulk.split(/\r?\n|,/).map(item => item.trim()).filter(item => item.length > 0);
-      if (newItems.length > 0) {
-        if (confirm(`تم رصد ${newItems.length} طلب. هل تريد استبدال القائمة القديمة بها؟`)) {
-          myTasks = newItems;
-          saveMyTasks();
-          renderTasksList();
-          alert('تم تحديث القائمة بنجاح!');
-        }
-      }
-    }
-  };
-  
-  const tasksListElem = document.getElementById('tasks-list');
-  if (tasksListElem && tasksListElem.parentNode) {
-    tasksListElem.parentNode.insertBefore(btnPasteAll, tasksListElem);
-  }
-}
 
 function renderTasksList() {
   tasksList.innerHTML = '';
