@@ -18,26 +18,10 @@ try {
   console.warn("Firebase غير مفعّل - يعمل في الوضع المحلي فقط");
 }
 
-// ====================== القوائم الافتراضية ======================
-const defaultHusbandCreatedForWife = [
-  "انظري في عيني مباشرة لمدة دقيقة كاملة دون أن تتحدثي أو تضحكي.",
-  "اقتربي وضعي رأسك على صَدري واستمعي لنبضات قلبي وأنت تغمضين عينيك.",
-  "ارسمي بإصبعك شكلاً خفيفاً أو قلباً على كفّ يدي ببطء.",
-  "اهمسي في أذني بصوت هادئ جداً بأجمل صفة تحبينها في شخصيتي.",
-  "ضعي عطرك المفضل واطبعي قبلة دافئة على خدّي.",
-  "أمسكِ بيدي الاثنتين وقبّلي أطراف أصابعي بحنان.",
-  "اجلسي بقربي وضعي رأسك على كتفي ودعيني أحيطك بذراعي.",
-  "ابتسمي لي ابتسامة عريضة ومحببة كما كنت تفعلين في أول لقاء بيننا.",
-  "مرّري أطراف أصابعك برفق على شعري واملأيه بلمسات دافئة.",
-  "اكتبي لي رسالة قصيرة بكلمات تعبر عن حبك وشوقك لي.",
-  "اخلعي جزءاً من ملابسك ببطء أمام الكاميرا وأنت تنظرين إليّ بشهوة.",
-  "المسي حلماتك ببطء ودلكيهما حتى تحمرا وأنت تتأوهين.",
-  "انحني ببطء وأريني مؤخرتك ومنحنيات جسمك بوضوح.",
-  "ارفعي ثوبك قليلاً وافتحي ساقيك ببطء ودعيني أتأمل جمالك.",
-  "ضعي وسادة بين ساقيك وفركي نفسك عليها وأنت تنظرين لعيني."
-];
+// ====================== القوائم الافتراضية الصحيحة والمضبوطة ======================
 
-const defaultWifeCreatedForHusband = [
+// 1. القائمة التي تظهر عند الزوج (لينفذها هو: الطلبات التي تريدها الزوجة منه)
+const wifeRequestsForHusband = [
   "انظر في عيني بنظرة حب دافئة ودعني أقرأ كم تشتاق لي.",
   "احضنّي بين ذراعيك بقوة وحنان واجعلني أشعر بالأمان الكامل.",
   "قبّل جبهتي برفق وأنت تهمس لي بكلمات شكر وتقدير.",
@@ -53,6 +37,25 @@ const defaultWifeCreatedForHusband = [
   "قل لي بصوت خشن ومثير: «أنا ملكك وحدك ولن أتركك أبداً».",
   "أرسل لي فيديو قصير وأنت تتنفس بصوت عالٍ وتتخيلني معك.",
   "اقترب من الكاميرا واهمس بكلمات جريئة عما ستفعله بي الليلة."
+];
+
+// 2. القائمة التي تظهر عند الزوجة (لتنفذها هي: الطلبات التي يريدها الزوج منها)
+const husbandRequestsForWife = [
+  "انظري في عيني مباشرة لمدة دقيقة كاملة دون أن تتحدثي أو تضحكي.",
+  "اقتربي وضعي رأسك على صَدري واستمعي لنبضات قلبي وأنت تغمضين عينيك.",
+  "ارسمي بإصبعك شكلاً خفيفاً أو قلباً على كفّ يدي ببطء.",
+  "اهمسي في أذني بصوت هادئ جداً بأجمل صفة تحبينها في شخصيتي.",
+  "ضعي عطرك المفضل واطبعي قبلة دافئة على خدّي.",
+  "أمسكِ بيدي الاثنتين وقبّلي أطراف أصابعي بحنان.",
+  "اجلسي بقربي وضعي رأسك على كتفي ودعيني أحيطك بذراعي.",
+  "ابتسمي لي ابتسامة عريضة ومحببة كما كنت تفعلين في أول لقاء بيننا.",
+  "مرّري أطراف أصابعك برفق على شعري واملأيه بلمسات دافئة.",
+  "اكتبي لي رسالة قصيرة بكلمات تعبر عن حبك وشوقك لي.",
+  "اخلعي جزءاً من ملابسك ببطء أمام الكاميرا وأنت تنظرين إليّ بشهوة.",
+  "المسي حلماتك ببطء ودلكيهما حتى تحمرا وأنت تتأوهين.",
+  "انحني ببطء وأريني مؤخرتك ومنحنيات جسمك بوضوح.",
+  "ارفعي ثوبك قليلاً وافتحي ساقيك ببطء ودعيني أتأمل جمالك.",
+  "ضعي وسادة بين ساقيك وفركي نفسك عليها وأنت تنظرين لعيني."
 ];
 
 // ====================== حالة التطبيق ======================
@@ -108,7 +111,7 @@ function joinRoom() {
   showScreen('game');
 }
 
-// ====================== تحميل القائمة ======================
+// ====================== تحميل القائمة المناسبة لكل دور ======================
 function loadMyTasks() {
   const key = `tasks_${roomCode}_${currentRole}`;
   const saved = localStorage.getItem(key);
@@ -124,7 +127,9 @@ function loadMyTasks() {
 }
 
 function resetToDefaultTasks() {
-  myTasks = currentRole === 'husband' ? [...defaultWifeCreatedForHusband] : [...defaultHusbandCreatedForWife];
+  // إذا دخل الزوج -> تظهر له طلبات الزوجة (لينفذها هو)
+  // إذا دخلت الزوجة -> تظهر لها طلبات الزوج (لتنفذها هي)
+  myTasks = currentRole === 'husband' ? [...wifeRequestsForHusband] : [...husbandRequestsForWife];
   saveMyTasks();
 }
 
@@ -204,11 +209,10 @@ function receiveRequest(data) {
   requestModal.classList.remove('hidden');
 }
 
-// زر إتمام المهمة (يقفل دور الطرف الآخر ولا يسمح له بالتحرك إلا بالضغط هنا)
+// زر إتمام المهمة
 document.getElementById('btn-done').addEventListener('click', () => {
   requestModal.classList.add('hidden');
   
-  // نقل الدور للشخص الذي كان ينتظر
   const nextTurnRole = currentRequest ? (currentRequest.from === 'husband' ? 'wife' : 'husband') : currentRole;
 
   if (database) {
@@ -274,7 +278,7 @@ function startListening() {
   }
 }
 
-// ====================== تعديل وإدارة القائمة (مع إضافة ميزة لصق قائمة كاملة) ======================
+// ====================== تعديل وإدارة القائمة ======================
 document.getElementById('btn-edit-list').addEventListener('click', () => {
   renderTasksList();
   showScreen('edit');
@@ -285,9 +289,8 @@ document.getElementById('btn-back').addEventListener('click', () => {
   showScreen('game');
 });
 
-// زر لإضافة طلب مفرد
 document.getElementById('btn-add-task').addEventListener('click', () => {
-  const newTask = prompt('اكتب طلباً جديداً تريد إضافته للقائمة:');
+  const newTask = prompt('اكتب طلباً جديداً لتضيفه إلى قائمتك:');
   if (newTask && newTask.trim()) {
     myTasks.push(newTask.trim());
     saveMyTasks();
@@ -295,23 +298,21 @@ document.getElementById('btn-add-task').addEventListener('click', () => {
   }
 });
 
-// زر جديد لصق واستبدال القائمة كاملة بكلمات جديدة
-const editHeader = document.querySelector('#edit-screen') || document.body;
+// زر لصق واستبدال القائمة كاملة
+const editScreenElem = document.getElementById('edit-screen');
 let btnPasteAll = document.getElementById('btn-paste-all');
-if (!btnPasteAll) {
+if (!btnPasteAll && editScreenElem) {
   btnPasteAll = document.createElement('button');
   btnPasteAll.id = 'btn-paste-all';
   btnPasteAll.textContent = '📥 استبدال أو لصق قائمة جديدة كاملة';
-  btnPasteAll.className = 'btn-secondary'; // استعمل نفس تصميم الأزرار
-  btnPasteAll.style.cssText = 'margin: 10px; padding: 10px; background: #ff4757; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 90%; max-width: 400px; margin-left: auto; margin-right: auto;';
+  btnPasteAll.style.cssText = 'margin: 10px auto; padding: 10px; background: #ff4757; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 90%; max-width: 400px;';
   
   btnPasteAll.onclick = () => {
-    const bulk = prompt('اكتب أو الصق الطلبات الجديدة مفصولة بفاصلة (,) أو كل طلب في سطر:');
+    const bulk = prompt('اكتب أو الصق الطلبات الجديدة (كل طلب في سطر أو مفصولة بفاصلة):');
     if (bulk && bulk.trim()) {
-      // تحويل النص المدخل إلى مصفوفة (بناءً على الأسطر أو الفواصل)
       const newItems = bulk.split(/\r?\n|,/).map(item => item.trim()).filter(item => item.length > 0);
       if (newItems.length > 0) {
-        if (confirm(`تم رصد ${newItems.length طلب}. هل تريد استبدال القائمة القديمة بها؟`)) {
+        if (confirm(`تم رصد ${newItems.length} طلب. هل تريد استبدال القائمة القديمة بها؟`)) {
           myTasks = newItems;
           saveMyTasks();
           renderTasksList();
@@ -321,7 +322,6 @@ if (!btnPasteAll) {
     }
   };
   
-  // إدراج الزر فوق قائمة الطلبات في شاشة التعديل
   const tasksListElem = document.getElementById('tasks-list');
   if (tasksListElem && tasksListElem.parentNode) {
     tasksListElem.parentNode.insertBefore(btnPasteAll, tasksListElem);
