@@ -12,16 +12,29 @@ const firebaseConfig = {
 
 let database = null;
 try {
-  if (typeof firebase !== 'undefined') {
-    firebase.initializeApp(firebaseConfig);
-    database = firebase.database();
-  }
+  firebase.initializeApp(firebaseConfig);
+  database = firebase.database();
 } catch (e) {
-  console.warn("Firebase غير مفعّل - يعمل محلياً", e);
+  console.warn("Firebase غير مفعّل - يعمل في الوضع المحلي فقط");
 }
 
-// ====================== القوائم الافتراضية ======================
+// ====================== القوائم الافتراضية (بدءاً بالطلبات الرومانسية ثم الجريئة) ======================
+
+// 1. القائمة التي يصنعها الزوج للزوجة (تبدأ بالرومانسيات الناعمة ثم تزداد إثارة)
 const defaultHusbandCreatedForWife = [
+  // --- مرحلة الإحماء الرومانسي الناعم ---
+  "انظري في عيني مباشرة لمدة دقيقة كاملة دون أن تتحدثي أو تضحكي.",
+  "اقتربي وضعي رأسك على صَدري واستمعي لنبضات قلبي وأنت تغمضين عينيك.",
+  "ارسمي بإصبعك شكلاً خفيفاً أو قلباً على كفّ يدي ببطء.",
+  "اهمسي في أذني بصوت هادئ جداً بأجمل صفة تحبينها في شخصيتي.",
+  "ضعي عطرك المفضل واطبعي قبلة دافئة على خدّي.",
+  "أمسكِ بيدي الاثنتين وقبّلي أطراف أصابعي بحنان.",
+  "اجلسي بقربي وضعي رأسك على كتفي ودعيني أحيطك بذراعي.",
+  "ابتسمي لي ابتسامة عريضة ومحببة كما كنت تفعلين في أول لقاء بيننا.",
+  "مرّري أطراف أصابعك برفق على شعري واملأيه بلمسات دافئة.",
+  "اكتبي لي رسالة قصيرة بكلمات تعبر عن حبك وشوقك لي.",
+  
+  // --- مرحلة الإثارة والجريئة ---
   "اخلعي جزءاً من ملابسك ببطء أمام الكاميرا وأنت تنظرين إليّ بشهوة.",
   "المسي حلماتك ببطء ودلكيهما حتى تحمرا وأنت تتأوهين.",
   "انحني ببطء وأريني مؤخرتك ومنحنيات جسمك بوضوح.",
@@ -34,7 +47,21 @@ const defaultHusbandCreatedForWife = [
   "امسحي جسمك بالزيت ببطء واجعلي بشرتك تلمع أمامي."
 ];
 
+// 2. القائمة التي تصنعها الزوجة للزوج (تبدأ بالرومانسيات الناعمة ثم تزداد إثارة)
 const defaultWifeCreatedForHusband = [
+  // --- مرحلة الإحماء الرومانسي الناعم ---
+  "انظر في عيني بنظرة حب دافئة ودعني أقرأ كم تشتاق لي.",
+  "احضنّي بين ذراعيك بقوة وحنان واجعلني أشعر بالأمان الكامل.",
+  "قبّل جبهتي برفق وأنت تهمس لي بكلمات شكر وتقدير.",
+  "اقترب مني واهمس بصوت هادئ: «أنتِ أجمل نعمة في حياتي».",
+  "امسك يديّ الاثنتين واطبع عليهما قبلة دافئة ومليئة بالحب.",
+  "دمِج أصابعك بأصابع يدي وشبّكها بثبات ودفء.",
+  "دلك كتفيّ ورقبتي بحركات دائرية خفيفة لتخفيف تعب اليوم.",
+  "انحُنِ أمامي قليلاً وامتدح جمالي وأناقتي بعبارات رقيقة.",
+  "ضع يدك على قلبي وقل لي بصوت حنون: «هذا المكان ملك لكِ وحدكِ».",
+  "امسح بيدك على وجنتي بحركة رقيقة جداً وحنونة.",
+
+  // --- مرحلة الإثارة والجريئة ---
   "انزع قميصك ببطء وأرني صدرك وعضلاتك وأنت تتلمسها.",
   "أمسك قضيبك أمام الكاميرا ودلّكه ببطء وأنت تنظر إليّ بشهوة.",
   "قل لي بصوت خشن ومثير: «أنا ملكك وحدك ولن أتركك أبداً».",
@@ -54,112 +81,38 @@ let myTasks = [];
 let isMyTurn = false;
 let currentRequest = null;
 
-// ====================== ربط الأحداث عند تحميل الصفحة ======================
-document.addEventListener('DOMContentLoaded', () => {
-  const btnHusband = document.getElementById('btn-husband');
-  const btnWife = document.getElementById('btn-wife');
-  const btnJoin = document.getElementById('btn-join');
+// ====================== عناصر DOM ======================
+const loginScreen = document.getElementById('login-screen');
+const gameScreen = document.getElementById('game-screen');
+const editScreen = document.getElementById('edit-screen');
+const requestModal = document.getElementById('request-modal');
+const themeWrapper = document.getElementById('theme-wrapper');
+const turnText = document.getElementById('turn-text');
+const statusMessage = document.getElementById('status-message');
+const actionBtn = document.getElementById('action-btn');
+const requestText = document.getElementById('request-text');
+const requestImage = document.getElementById('request-image');
+const tasksList = document.getElementById('tasks-list');
 
-  if (btnHusband) {
-    btnHusband.addEventListener('click', () => {
-      currentRole = 'husband';
-      btnHusband.style.border = '3px solid #fff';
-      btnHusband.style.transform = 'scale(1.05)';
-      if (btnWife) {
-        btnWife.style.border = 'none';
-        btnWife.style.transform = 'scale(1)';
-      }
-    });
-  }
-
-  if (btnWife) {
-    btnWife.addEventListener('click', () => {
-      currentRole = 'wife';
-      btnWife.style.border = '3px solid #fff';
-      btnWife.style.transform = 'scale(1.05)';
-      if (btnHusband) {
-        btnHusband.style.border = 'none';
-        btnHusband.style.transform = 'scale(1)';
-      }
-    });
-  }
-
-  if (btnJoin) {
-    btnJoin.addEventListener('click', joinRoom);
-  }
-
-  const actionBtn = document.getElementById('action-btn');
-  if (actionBtn) {
-    actionBtn.addEventListener('click', sendRandomRequest);
-  }
-
-  const btnDone = document.getElementById('btn-done');
-  if (btnDone) {
-    btnDone.addEventListener('click', () => {
-      document.getElementById('request-modal').classList.add('hidden');
-      const nextTurnRole = currentRole;
-
-      if (database) {
-        database.ref(`rooms/${roomCode}/currentRequest`).remove();
-        database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole);
-      } else {
-        localStorage.removeItem(`request_${roomCode}`);
-        localStorage.setItem(`turn_${roomCode}`, nextTurnRole);
-      }
-    });
-  }
-
-  const btnHide = document.getElementById('btn-hide');
-  if (btnHide) {
-    btnHide.addEventListener('click', () => {
-      document.getElementById('request-modal').classList.add('hidden');
-    });
-  }
-
-  const btnEditList = document.getElementById('btn-edit-list');
-  if (btnEditList) {
-    btnEditList.addEventListener('click', () => {
-      renderTasksList();
-      showScreen('edit');
-    });
-  }
-
-  const btnBack = document.getElementById('btn-back');
-  if (btnBack) {
-    btnBack.addEventListener('click', () => {
-      updateTurnUI();
-      showScreen('game');
-    });
-  }
-
-  const btnAddTask = document.getElementById('btn-add-task');
-  if (btnAddTask) {
-    btnAddTask.addEventListener('click', () => {
-      const newTask = prompt('اكتب طلباً جديداً تريد إضافته لتنفذه:');
-      if (newTask && newTask.trim()) {
-        myTasks.push(newTask.trim());
-        saveMyTasks();
-        renderTasksList();
-      }
-    });
-  }
-
-  const btnLogout = document.getElementById('btn-logout');
-  if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
-      if (confirm('هل تريد الخروج؟')) {
-        location.reload();
-      }
-    });
-  }
+// ====================== أحداث الدخول ======================
+document.getElementById('btn-husband').addEventListener('click', () => {
+  currentRole = 'husband';
+  document.getElementById('btn-husband').style.outline = '3px solid #fff';
+  document.getElementById('btn-wife').style.outline = 'none';
 });
 
+document.getElementById('btn-wife').addEventListener('click', () => {
+  currentRole = 'wife';
+  document.getElementById('btn-wife').style.outline = '3px solid #fff';
+  document.getElementById('btn-husband').style.outline = 'none';
+});
+
+document.getElementById('btn-join').addEventListener('click', joinRoom);
+
 function joinRoom() {
-  const roomInput = document.getElementById('room-code');
-  const code = roomInput ? roomInput.value.trim() : '';
-  
+  const code = document.getElementById('room-code').value.trim();
   if (!currentRole) {
-    alert('الرجاء اختيار الدور أولاً (زوج أو زوجة)');
+    alert('اختر أولاً: زوج أو زوجة');
     return;
   }
   if (!code || code.length < 4) {
@@ -179,11 +132,7 @@ function loadMyTasks() {
   const key = `tasks_${roomCode}_${currentRole}`;
   const saved = localStorage.getItem(key);
   if (saved) {
-    try {
-      myTasks = JSON.parse(saved);
-    } catch(e) {
-      resetToDefaultTasks();
-    }
+    myTasks = JSON.parse(saved);
   } else {
     resetToDefaultTasks();
   }
@@ -201,36 +150,27 @@ function saveMyTasks() {
 
 // ====================== واجهة اللعب ======================
 function setupGameUI() {
-  const themeWrapper = document.getElementById('theme-wrapper');
-  if (themeWrapper) {
-    themeWrapper.className = currentRole === 'husband' ? 'theme-husband' : 'theme-wife';
-  }
+  themeWrapper.className = currentRole === 'husband' ? 'theme-husband' : 'theme-wife';
   updateTurnUI();
 }
 
 function updateTurnUI() {
-  const turnText = document.getElementById('turn-text');
-  const statusMessage = document.getElementById('status-message');
-  const actionBtn = document.getElementById('action-btn');
-
   if (isMyTurn) {
-    if (turnText) turnText.textContent = currentRole === 'husband' ? 'دورك (اسحب طلباً لتنفذه)' : 'دورك (اسحبي طلباً لتنفذيه)';
-    if (statusMessage) statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب وتنفذه`;
-    if (actionBtn) {
-      actionBtn.disabled = myTasks.length === 0;
-      actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً ونفذه' : 'انتهت الطلبات! أعد تعيين القائمة';
-    }
+    turnText.textContent = currentRole === 'husband' ? 'دورك (اسحب طلباً لتنفذه)' : 'دورك (اسحبي طلباً لتنفذيه)';
+    statusMessage.textContent = `لديك ${myTasks.length} طلب في قائمتك – اضغط لسحب الطلب وتنفذه`;
+    actionBtn.disabled = myTasks.length === 0;
+    actionBtn.textContent = myTasks.length > 0 ? 'اسحب طلباً ونفذه' : 'انتهت الطلبات! أعد تعيين القائمة';
   } else {
-    if (turnText) turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
-    if (statusMessage) statusMessage.textContent = 'الشريك يسحب وينفذ طلبه الآن...';
-    if (actionBtn) {
-      actionBtn.disabled = true;
-      actionBtn.textContent = 'انتظر دورك';
-    }
+    turnText.textContent = currentRole === 'husband' ? 'دور الزوجة' : 'دور الزوج';
+    statusMessage.textContent = 'الشريك يسحب وينفذ طلبه الآن...';
+    actionBtn.disabled = true;
+    actionBtn.textContent = 'انتظر دورك';
   }
 }
 
 // ====================== سحب وإرسال الطلب ======================
+actionBtn.addEventListener('click', sendRandomRequest);
+
 function sendRandomRequest() {
   if (!isMyTurn) return;
 
@@ -274,14 +214,28 @@ function receiveRequest(data) {
   if (!data) return;
 
   currentRequest = data;
-  const requestText = document.getElementById('request-text');
-  const requestImage = document.getElementById('request-image');
-  const requestModal = document.getElementById('request-modal');
-
-  if (requestText) requestText.textContent = data.text;
-  if (requestImage) requestImage.innerHTML = data.image || '💋';
-  if (requestModal) requestModal.classList.remove('hidden');
+  requestText.textContent = data.text;
+  requestImage.innerHTML = data.image || '💋';
+  requestModal.classList.remove('hidden');
 }
+
+document.getElementById('btn-done').addEventListener('click', () => {
+  requestModal.classList.add('hidden');
+  
+  const nextTurnRole = currentRole;
+
+  if (database) {
+    database.ref(`rooms/${roomCode}/currentRequest`).remove();
+    database.ref(`rooms/${roomCode}/turn`).set(nextTurnRole);
+  } else {
+    localStorage.removeItem(`request_${roomCode}`);
+    localStorage.setItem(`turn_${roomCode}`, nextTurnRole);
+  }
+});
+
+document.getElementById('btn-hide').addEventListener('click', () => {
+  requestModal.classList.add('hidden');
+});
 
 // ====================== الاستماع للتغييرات ======================
 function startListening() {
@@ -330,55 +284,82 @@ function startListening() {
 }
 
 // ====================== تعديل وإدارة القائمة ======================
+document.getElementById('btn-edit-list').addEventListener('click', () => {
+  renderTasksList();
+  showScreen('edit');
+});
+
+document.getElementById('btn-back').addEventListener('click', () => {
+  updateTurnUI();
+  showScreen('game');
+});
+
+document.getElementById('btn-add-task').addEventListener('click', () => {
+  const newTask = prompt('اكتب طلباً جديداً تريد إضافته للقائمة:');
+  if (newTask && newTask.trim()) {
+    myTasks.push(newTask.trim());
+    saveMyTasks();
+    renderTasksList();
+  }
+});
+
 function renderTasksList() {
-  const tasksList = document.getElementById('tasks-list');
-  if (!tasksList) return;
-  
   tasksList.innerHTML = '';
   myTasks.forEach((task, index) => {
     const div = document.createElement('div');
     div.className = 'task-item';
-    div.innerHTML = `
-      <span>${task}</span>
-      <div class="task-actions">
-        <button class="btn-edit" onclick="editTask(${index})">تعديل</button>
-        <button class="btn-delete" onclick="deleteTask(${index})">حذف</button>
-      </div>
-    `;
+    
+    const span = document.createElement('span');
+    span.textContent = task;
+    
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'task-actions';
+    
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-edit';
+    editBtn.textContent = 'تعديل';
+    editBtn.onclick = () => {
+      const newText = prompt('عدّل الطلب:', myTasks[index]);
+      if (newText && newText.trim()) {
+        myTasks[index] = newText.trim();
+        saveMyTasks();
+        renderTasksList();
+      }
+    };
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-delete';
+    deleteBtn.textContent = 'حذف';
+    deleteBtn.onclick = () => {
+      if (confirm('هل تريد حذف هذا الطلب؟')) {
+        myTasks.splice(index, 1);
+        saveMyTasks();
+        renderTasksList();
+      }
+    };
+    
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(deleteBtn);
+    
+    div.appendChild(span);
+    div.appendChild(actionsDiv);
     tasksList.appendChild(div);
   });
 }
 
-window.editTask = function(index) {
-  const newText = prompt('عدّل الطلب:', myTasks[index]);
-  if (newText && newText.trim()) {
-    myTasks[index] = newText.trim();
-    saveMyTasks();
-    renderTasksList();
+// ====================== خروج ======================
+document.getElementById('btn-logout').addEventListener('click', () => {
+  if (confirm('هل تريد الخروج؟')) {
+    location.reload();
   }
-};
-
-window.deleteTask = function(index) {
-  if (confirm('هل تريد حذف هذا الطلب؟')) {
-    myTasks.splice(index, 1);
-    saveMyTasks();
-    renderTasksList();
-  }
-};
+});
 
 // ====================== التنقل بين الشاشات ======================
 function showScreen(name) {
-  const loginScreen = document.getElementById('login-screen');
-  const gameScreen = document.getElementById('game-screen');
-  const editScreen = document.getElementById('edit-screen');
-
-  if (loginScreen) loginScreen.classList.remove('active');
-  if (gameScreen) gameScreen.classList.remove('active');
-  if (editScreen) editScreen.classList.remove('active');
-
-  if (name === 'login' && loginScreen) loginScreen.classList.add('active');
-  if (name === 'game' && gameScreen) gameScreen.classList.add('active');
-  if (name === 'edit' && editScreen) editScreen.classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  if (name === 'login') loginScreen.classList.add('active');
+  if (name === 'game') gameScreen.classList.add('active');
+  if (name === 'edit') editScreen.classList.add('active');
 }
 
 showScreen('login');
