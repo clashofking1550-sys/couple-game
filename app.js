@@ -274,7 +274,7 @@ function startListening() {
   }
 }
 
-// ====================== تعديل وإدارة القائمة (مع إضافة ميزة لصق قائمة كاملة) ======================
+// ====================== تعديل وإدارة القائمة ======================
 document.getElementById('btn-edit-list').addEventListener('click', () => {
   renderTasksList();
   showScreen('edit');
@@ -295,23 +295,22 @@ document.getElementById('btn-add-task').addEventListener('click', () => {
   }
 });
 
-// زر جديد لصق واستبدال القائمة كاملة بكلمات جديدة
+// زر لصق واستبدال القائمة كاملة (تم تصحيح الخطأ النحوي هنا)
 const editHeader = document.querySelector('#edit-screen') || document.body;
 let btnPasteAll = document.getElementById('btn-paste-all');
 if (!btnPasteAll) {
   btnPasteAll = document.createElement('button');
   btnPasteAll.id = 'btn-paste-all';
   btnPasteAll.textContent = '📥 استبدال أو لصق قائمة جديدة كاملة';
-  btnPasteAll.className = 'btn-secondary'; // استعمل نفس تصميم الأزرار
+  btnPasteAll.className = 'btn-secondary';
   btnPasteAll.style.cssText = 'margin: 10px; padding: 10px; background: #ff4757; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 90%; max-width: 400px; margin-left: auto; margin-right: auto;';
   
   btnPasteAll.onclick = () => {
     const bulk = prompt('اكتب أو الصق الطلبات الجديدة مفصولة بفاصلة (,) أو كل طلب في سطر:');
     if (bulk && bulk.trim()) {
-      // تحويل النص المدخل إلى مصفوفة (بناءً على الأسطر أو الفواصل)
       const newItems = bulk.split(/\r?\n|,/).map(item => item.trim()).filter(item => item.length > 0);
       if (newItems.length > 0) {
-        if (confirm(`تم رصد ${newItems.length طلب}. هل تريد استبدال القائمة القديمة بها؟`)) {
+        if (confirm(`تم رصد ${newItems.length} طلب. هل تريد استبدال القائمة القديمة بها؟`)) {
           myTasks = newItems;
           saveMyTasks();
           renderTasksList();
@@ -321,7 +320,6 @@ if (!btnPasteAll) {
     }
   };
   
-  // إدراج الزر فوق قائمة الطلبات في شاشة التعديل
   const tasksListElem = document.getElementById('tasks-list');
   if (tasksListElem && tasksListElem.parentNode) {
     tasksListElem.parentNode.insertBefore(btnPasteAll, tasksListElem);
